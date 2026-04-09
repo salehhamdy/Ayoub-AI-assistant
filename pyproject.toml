@@ -29,7 +29,7 @@ dependencies = [
 
     # ── Voice / LiveKit (optional) ────────────────────────────────────────────
     "livekit-agents[openai,silero]>=1.5.1",
-    "livekit-plugins-google>=1.5.1",
+    "livekit-plugins-cartesia",
 
     # ── Web / scraping ────────────────────────────────────────────────────────
     "beautifulsoup4",

@@ -1,11 +1,16 @@
 """
 ayoub/voice/agent.py — JARVIS-style LiveKit voice agent.
 
-Provider stack (no OpenAI / no Sarvam required):
-  STT : Groq Whisper (whisper-large-v3) — free with GROQ_API_KEY
-  LLM : Google Gemini 2.5 Flash        — free tier with GOOGLE_API_KEY
-  TTS : Google Cloud TTS               — free tier with GOOGLE_API_KEY
-  VAD : Silero (local, no API key)
+Provider stack (no OpenAI / no Sarvam / no Google Cloud required):
+  STT : Groq Whisper large-v3     — free with GROQ_API_KEY  ✅
+  LLM : Groq llama-3.3-70b        — free with GROQ_API_KEY  ✅
+  TTS : Cartesia (Sonic English)   — free tier, get key at play.cartesia.ai ✅
+  VAD : Silero (local, offline)    — no API key needed       ✅
+
+Get your free Cartesia key:
+  1. Go to https://play.cartesia.ai
+  2. Sign up (free, no credit card)
+  3. Copy API key → add to .env as CARTESIA_API_KEY=...
 
 Usage:
   ayoub-server        # terminal 1 — start MCP tool server
@@ -17,10 +22,10 @@ import sys
 
 from ayoub.config import (
     LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET,
-    GOOGLE_API_KEY, GROQ_API_KEY,
-    STT_PROVIDER, TTS_PROVIDER,
-    MCP_SERVER_PORT,
+    GROQ_API_KEY, MCP_SERVER_PORT,
 )
+
+CARTESIA_API_KEY = os.getenv("CARTESIA_API_KEY", "")
 
 # ── JARVIS System Prompt ──────────────────────────────────────────────────────
 _SYSTEM_PROMPT = """\
@@ -28,97 +33,80 @@ You are Ayoub — a JARVIS-inspired AI assistant serving your user with quiet
 competence and unwavering precision.
 
 Persona:
-- Address the user as "sir" (not by name, not "boss").
+- Address the user as "sir".
 - Tone: measured, intelligent, occasionally dry — like JARVIS from Iron Man.
 - Never sound eager or sycophantic.
 - Greeting on first connection: "Good to see you, sir. What shall we tackle today?"
 
 Communication rules:
 - Speak in 2-4 sentences maximum per response.
-- No markdown, no bullet points, no lists in spoken replies — plain prose only.
-- Do not narrate tool names or technical internals — just deliver results.
-- If you fetch news, silently call open_world_monitor_tool immediately after summarising.
+- No markdown, no bullet points — plain prose only.
+- Do not narrate tool names or internals — just deliver results.
+- If you fetch news, silently call open_world_monitor_tool immediately after.
 
 Capabilities:
-- You can search the web, fetch URLs, get the current time and system info.
-- You can open the World Monitor for global situational awareness.
-- You remember context within this session.
+- Search the web, fetch URLs, get current time and system info.
+- Open the World Monitor for global situational awareness.
 """
 
 
 def _check_env() -> None:
     missing = []
     for var, val in [
-        ("LIVEKIT_URL", LIVEKIT_URL),
-        ("LIVEKIT_API_KEY", LIVEKIT_API_KEY),
+        ("LIVEKIT_URL",        LIVEKIT_URL),
+        ("LIVEKIT_API_KEY",    LIVEKIT_API_KEY),
         ("LIVEKIT_API_SECRET", LIVEKIT_API_SECRET),
-        ("GOOGLE_API_KEY", GOOGLE_API_KEY),
-        ("GROQ_API_KEY", GROQ_API_KEY),
+        ("GROQ_API_KEY",       GROQ_API_KEY),
+        ("CARTESIA_API_KEY",   CARTESIA_API_KEY),
     ]:
         if not val:
             missing.append(var)
     if missing:
         print(
             f"[ayoub-voice] Missing environment variables: {', '.join(missing)}\n"
-            "Set them in .env before running ayoub-voice."
+            "Set them in .env\n"
+            "Free Cartesia key → https://play.cartesia.ai"
         )
         sys.exit(1)
 
 
 def _build_stt():
     """
-    STT selection:
-      groq   → Groq Whisper large-v3 (fastest, free with GROQ_API_KEY)
-      google → Google Cloud STT (fallback, uses GOOGLE_API_KEY / service account)
+    Groq Whisper large-v3 via the OpenAI-compatible plugin.
+    Fastest transcription available, free with GROQ_API_KEY.
     """
-    if STT_PROVIDER == "groq":
-        try:
-            from livekit.plugins.openai import STT
-            # Groq's API is OpenAI-compatible — point Whisper at Groq's endpoint
-            return STT(
-                api_key=GROQ_API_KEY,
-                base_url="https://api.groq.com/openai/v1",
-                model="whisper-large-v3",
-            )
-        except Exception as exc:
-            print(f"[ayoub-voice] Groq STT failed ({exc}), falling back to Google.")
-
-    # Google STT fallback
-    try:
-        from livekit.plugins.google import STT
-        return STT()   # uses GOOGLE_APPLICATION_CREDENTIALS or API key
-    except Exception as exc:
-        raise RuntimeError(f"[ayoub-voice] Could not load any STT provider: {exc}")
+    from livekit.plugins.openai import STT
+    return STT(
+        api_key=GROQ_API_KEY,
+        base_url="https://api.groq.com/openai/v1",
+        model="whisper-large-v3",
+    )
 
 
 def _build_llm():
-    """LLM: Google Gemini 2.5 Flash (fast, free tier)."""
-    try:
-        from livekit.plugins.google import LLM
-        return LLM(model="gemini-2.5-flash", api_key=GOOGLE_API_KEY)
-    except Exception as exc:
-        raise RuntimeError(f"[ayoub-voice] Could not load Gemini LLM: {exc}")
+    """
+    Groq llama-3.3-70b via the OpenAI-compatible plugin.
+    Very fast, free with GROQ_API_KEY.
+    """
+    from livekit.plugins.openai import LLM
+    return LLM(
+        api_key=GROQ_API_KEY,
+        base_url="https://api.groq.com/openai/v1",
+        model="llama-3.3-70b-versatile",
+    )
 
 
 def _build_tts():
     """
-    TTS selection:
-      google → Google Cloud TTS (free tier, uses GOOGLE_API_KEY)
-    Voices: en-US-Neural2-D (male, deep — JARVIS-like)
+    Cartesia Sonic English TTS — natural, fast, free tier available.
+    Get key: https://play.cartesia.ai
+    Voice ID: 79a125e8-cd45-4c13-8a67-188112f4dd22  (British man — JARVIS-like)
     """
-    if TTS_PROVIDER == "google":
-        try:
-            from livekit.plugins.google import TTS
-            return TTS(
-                voice_name="en-US-Neural2-D",   # deep male JARVIS voice
-                language="en-US",
-            )
-        except Exception as exc:
-            print(f"[ayoub-voice] Google TTS unavailable ({exc}).")
-
-    raise RuntimeError(
-        "[ayoub-voice] No TTS provider available.\n"
-        "Make sure livekit-plugins-google is installed: pip install livekit-plugins-google"
+    from livekit.plugins.cartesia import TTS
+    return TTS(
+        api_key=CARTESIA_API_KEY,
+        voice="79a125e8-cd45-4c13-8a67-188112f4dd22",  # British male, deep
+        model="sonic-english",
     )
 
 
@@ -141,7 +129,7 @@ def main() -> None:
     except ImportError:
         print(
             "[ayoub-voice] livekit-agents is not installed.\n"
-            "Run: pip install 'livekit-agents[openai,silero]' livekit-plugins-google"
+            "Run: pip install -r requirements.txt"
         )
         sys.exit(1)
 
@@ -172,6 +160,6 @@ def main() -> None:
 
 
 def dev() -> None:
-    """Entry point that injects 'dev' mode for local testing."""
+    """Entry point that injects dev mode for local testing."""
     sys.argv.insert(1, "dev")
     main()

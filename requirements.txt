@@ -19,12 +19,12 @@ ollama
 fastmcp
 httpx
 
-# ── Voice / LiveKit (optional — only needed for ayoub-voice) ──────────────────
-# STT : Groq Whisper (free with GROQ_API_KEY — fastest transcription)
-# LLM : Google Gemini  (free tier with GOOGLE_API_KEY)
-# TTS : Google TTS     (free tier with GOOGLE_API_KEY)
+# ── Voice / LiveKit ──────────────────────────────────────────────────────────
+# STT + LLM : Groq (free — uses GROQ_API_KEY via OpenAI-compatible plugin)
+# TTS       : Cartesia (free tier — get key at https://play.cartesia.ai)
+# VAD       : Silero (local, no API key)
 livekit-agents[openai,silero]>=1.5.1
-livekit-plugins-google>=1.5.1
+livekit-plugins-cartesia
 
 # ── Web / scraping tools ──────────────────────────────────────────────────────
 beautifulsoup4
