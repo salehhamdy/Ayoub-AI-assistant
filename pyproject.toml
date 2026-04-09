@@ -28,7 +28,8 @@ dependencies = [
     "httpx",
 
     # ── Voice / LiveKit (optional) ────────────────────────────────────────────
-    "livekit-agents[openai,silero]>=1.5.1",
+    "livekit-agents[silero]>=1.5.1",
+    "livekit-plugins-groq",
     "livekit-plugins-cartesia",
 
     # ── Web / scraping ────────────────────────────────────────────────────────

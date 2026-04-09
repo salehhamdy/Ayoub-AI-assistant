@@ -2,15 +2,13 @@
 ayoub/voice/agent.py — JARVIS-style LiveKit voice agent.
 
 Provider stack (no OpenAI / no Sarvam / no Google Cloud required):
-  STT : Groq Whisper large-v3     — free with GROQ_API_KEY  ✅
-  LLM : Groq llama-3.3-70b        — free with GROQ_API_KEY  ✅
-  TTS : Cartesia (Sonic English)   — free tier, get key at play.cartesia.ai ✅
-  VAD : Silero (local, offline)    — no API key needed       ✅
+  STT : livekit-plugins-groq  → Groq Whisper large-v3   (free, GROQ_API_KEY)
+  LLM : livekit-plugins-groq  → llama-3.3-70b-versatile  (free, GROQ_API_KEY)
+  TTS : livekit-plugins-cartesia → Sonic English           (free tier)
+  VAD : Silero (local, offline)                            (no API key)
 
-Get your free Cartesia key:
-  1. Go to https://play.cartesia.ai
-  2. Sign up (free, no credit card)
-  3. Copy API key → add to .env as CARTESIA_API_KEY=...
+Get your free Cartesia key (no credit card):
+  https://play.cartesia.ai  → Sign up → Copy API key → paste in .env
 
 Usage:
   ayoub-server        # terminal 1 — start MCP tool server
@@ -71,41 +69,33 @@ def _check_env() -> None:
 
 
 def _build_stt():
-    """
-    Groq Whisper large-v3 via the OpenAI-compatible plugin.
-    Fastest transcription available, free with GROQ_API_KEY.
-    """
-    from livekit.plugins.openai import STT
+    """Groq Whisper large-v3 via livekit-plugins-groq."""
+    from livekit.plugins.groq import STT
     return STT(
         api_key=GROQ_API_KEY,
-        base_url="https://api.groq.com/openai/v1",
         model="whisper-large-v3",
     )
 
 
 def _build_llm():
-    """
-    Groq llama-3.3-70b via the OpenAI-compatible plugin.
-    Very fast, free with GROQ_API_KEY.
-    """
-    from livekit.plugins.openai import LLM
+    """Groq llama-3.3-70b via livekit-plugins-groq."""
+    from livekit.plugins.groq import LLM
     return LLM(
         api_key=GROQ_API_KEY,
-        base_url="https://api.groq.com/openai/v1",
         model="llama-3.3-70b-versatile",
     )
 
 
 def _build_tts():
     """
-    Cartesia Sonic English TTS — natural, fast, free tier available.
-    Get key: https://play.cartesia.ai
-    Voice ID: 79a125e8-cd45-4c13-8a67-188112f4dd22  (British man — JARVIS-like)
+    Cartesia Sonic English TTS.
+    Voice: 79a125e8-cd45-4c13-8a67-188112f4dd22 (British male, deep — JARVIS-like)
+    Get free key: https://play.cartesia.ai
     """
     from livekit.plugins.cartesia import TTS
     return TTS(
         api_key=CARTESIA_API_KEY,
-        voice="79a125e8-cd45-4c13-8a67-188112f4dd22",  # British male, deep
+        voice="79a125e8-cd45-4c13-8a67-188112f4dd22",
         model="sonic-english",
     )
 
@@ -128,8 +118,8 @@ def main() -> None:
         from livekit.plugins import silero
     except ImportError:
         print(
-            "[ayoub-voice] livekit-agents is not installed.\n"
-            "Run: pip install -r requirements.txt"
+            "[ayoub-voice] Missing packages. Run:\n"
+            "  pip install livekit-agents[silero] livekit-plugins-groq livekit-plugins-cartesia"
         )
         sys.exit(1)
 

@@ -23,7 +23,8 @@ httpx
 # STT + LLM : Groq (free — uses GROQ_API_KEY via OpenAI-compatible plugin)
 # TTS       : Cartesia (free tier — get key at https://play.cartesia.ai)
 # VAD       : Silero (local, no API key)
-livekit-agents[openai,silero]>=1.5.1
+livekit-agents[silero]>=1.5.1
+livekit-plugins-groq
 livekit-plugins-cartesia
 
 # ── Web / scraping tools ──────────────────────────────────────────────────────
