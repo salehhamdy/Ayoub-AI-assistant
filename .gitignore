@@ -25,6 +25,7 @@ data/memory/*.txt
 data/tmp/*
 output/imgs/*
 output/sketches/*
+Ayoub.md
 
 # uv
 uv.lock
