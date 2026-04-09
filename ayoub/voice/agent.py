@@ -20,7 +20,7 @@ import sys
 
 from ayoub.config import (
     LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET,
-    GROQ_API_KEY, MCP_SERVER_PORT,
+    GROQ_API_KEY,
 )
 
 CARTESIA_API_KEY = os.getenv("CARTESIA_API_KEY", "")
@@ -100,20 +100,12 @@ def _build_tts():
     )
 
 
-def _build_mcp():
-    try:
-        from livekit.agents.mcp import MCPServerHTTP
-        return [MCPServerHTTP(url=f"http://localhost:{MCP_SERVER_PORT}/sse")]
-    except ImportError:
-        return []
-
-
 def main() -> None:
     """Entry point for `ayoub-voice` console script."""
     _check_env()
 
     try:
-        from livekit.agents import cli, WorkerOptions, ctx
+        from livekit.agents import cli, WorkerOptions, JobContext
         from livekit.agents.voice import Agent, AgentSession
         from livekit.plugins import silero
     except ImportError:
@@ -123,7 +115,7 @@ def main() -> None:
         )
         sys.exit(1)
 
-    async def entrypoint(agent_ctx: ctx.JobContext) -> None:
+    async def entrypoint(agent_ctx: JobContext) -> None:
         await agent_ctx.connect()
 
         session = AgentSession(
@@ -131,7 +123,6 @@ def main() -> None:
             llm=_build_llm(),
             tts=_build_tts(),
             vad=silero.VAD.load(),
-            mcp_servers=_build_mcp(),
         )
 
         class AyoubVoiceAgent(Agent):
