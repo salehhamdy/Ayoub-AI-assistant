@@ -20,6 +20,10 @@ GOOGLE_API_KEY  = os.getenv("GOOGLE_API_KEY", "")
 OPENAI_API_KEY  = os.getenv("OPENAI_API_KEY", "")
 GROQ_API_KEY    = os.getenv("GROQ_API_KEY", "")
 
+# ── DeepSeek (OpenAI-compatible) ─────────────────────────────────────────────
+DEEPSEEK_API_KEY  = os.getenv("DEEPSEEK_API_KEY", "")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+
 # ── Ollama ────────────────────────────────────────────────────────────────────
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
