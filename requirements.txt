@@ -26,6 +26,7 @@ httpx
 livekit-agents[silero]>=1.5.1
 livekit-plugins-groq
 livekit-plugins-cartesia
+mcp
 
 # ── Web / scraping tools ──────────────────────────────────────────────────────
 beautifulsoup4
