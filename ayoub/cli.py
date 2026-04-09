@@ -1,4 +1,4 @@
-"""
+r"""
 ayoub/cli.py — Cross-platform CLI for Ayoub-AI-assistant.
 
 Registered as console_script 'ayoub' in pyproject.toml.
