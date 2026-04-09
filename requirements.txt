@@ -20,9 +20,11 @@ fastmcp
 httpx
 
 # ── Voice / LiveKit (optional — only needed for ayoub-voice) ──────────────────
+# STT : Groq Whisper (free with GROQ_API_KEY — fastest transcription)
+# LLM : Google Gemini  (free tier with GOOGLE_API_KEY)
+# TTS : Google TTS     (free tier with GOOGLE_API_KEY)
 livekit-agents[openai,silero]>=1.5.1
 livekit-plugins-google>=1.5.1
-livekit-plugins-sarvam
 
 # ── Web / scraping tools ──────────────────────────────────────────────────────
 beautifulsoup4
