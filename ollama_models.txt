@@ -1,0 +1,68 @@
+# ============================================================
+# Ayoub-AI-assistant — Ollama Models to Download
+# ============================================================
+# Install Ollama first:
+#   Windows : https://ollama.com/download/windows
+#   Linux   : curl -fsSL https://ollama.com/install.sh | sh
+#
+# Then run each command below in your terminal.
+# After downloading, set in .env:
+#   LLM_PROVIDER=ollama
+#   LLM_MODEL=<model-name>
+# ============================================================
+
+# ── General Purpose ──────────────────────────────────────────
+# Best all-round model, fast, 8B parameters
+ollama pull llama3.1
+
+# Larger, more capable version (needs ~48 GB RAM — skip if low RAM)
+# ollama pull llama3.1:70b
+
+# Fast and efficient, great for chat and tasks
+ollama pull mistral
+
+# Small but very capable Llama (only 3B — great for low RAM)
+ollama pull llama3.2:3b
+
+# ── Google Gemma ─────────────────────────────────────────────
+# Lightweight, good quality
+ollama pull gemma3:4b
+
+# Better quality version (needs ~8 GB RAM)
+ollama pull gemma3:12b
+
+# ── DeepSeek Reasoning ───────────────────────────────────────
+# Fast reasoning — think before answering (like o1-mini)
+ollama pull deepseek-r1:7b
+
+# Better reasoning quality
+ollama pull deepseek-r1:14b
+
+# Near OpenAI o1 level (needs ~20 GB RAM — skip if low RAM)
+# ollama pull deepseek-r1:32b
+
+# ── Small & Fast (Low RAM) ────────────────────────────────────
+# Microsoft Phi-3, very efficient and smart for its size
+ollama pull phi3
+
+# Best multilingual model (Arabic, English, French, etc.)
+ollama pull qwen2.5:7b
+
+# ── Code Focused ─────────────────────────────────────────────
+# Best model for writing and explaining code
+ollama pull qwen2.5-coder:7b
+
+# Classic coding model by Meta
+ollama pull codellama
+
+# ============================================================
+# QUICK START — minimal set (only ~15 GB total):
+#   ollama pull llama3.1
+#   ollama pull mistral
+#   ollama pull deepseek-r1:7b
+#   ollama pull phi3
+#
+# After pulling, test with:
+#   ollama run llama3.1
+#   # type your question, Ctrl+D to exit
+# ============================================================
