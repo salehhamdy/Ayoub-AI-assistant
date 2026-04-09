@@ -1,0 +1,41 @@
+# ── Core ──────────────────────────────────────────────────────────────────────
+python-dotenv
+rich
+colorama
+
+# ── LLM providers ─────────────────────────────────────────────────────────────
+google-generativeai>=0.7.0
+langchain-google-genai
+langchain>=0.3.0
+langchain-core
+langchain-experimental
+langchain-openai
+langchain-groq
+openai
+groq
+ollama
+
+# ── MCP server ────────────────────────────────────────────────────────────────
+fastmcp
+httpx
+
+# ── Voice / LiveKit (optional — only needed for ayoub-voice) ──────────────────
+livekit-agents[openai,silero]>=1.5.1
+livekit-plugins-google>=1.5.1
+livekit-plugins-sarvam
+
+# ── Web / scraping tools ──────────────────────────────────────────────────────
+beautifulsoup4
+lxml
+requests
+
+# ── File tools ────────────────────────────────────────────────────────────────
+PyPDF2
+
+# ── Vision / screen tools ─────────────────────────────────────────────────────
+pillow
+opencv-python
+
+# ── Image generation ──────────────────────────────────────────────────────────
+gradio_client
+matplotlib
