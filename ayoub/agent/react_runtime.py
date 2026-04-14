@@ -31,7 +31,7 @@ class ReActRuntime(BaseRuntime):
 
     # ── Loop ──────────────────────────────────────────────────────────────────
 
-    def loop(self, agent_max_steps: int = 10, verbose_tools: bool = False) -> str:
+    def loop(self, agent_max_steps: int = 12, verbose_tools: bool = True) -> str:
         """
         ReAct loop: Thought → Action → Observation → repeat until 'finish'.
         Returns the Final Answer string.
@@ -78,17 +78,19 @@ class ReActRuntime(BaseRuntime):
                     tool_result = f"[Tool error: {exc}]"
                     warnings.warn(str(exc))
 
-                if verbose_tools:
-                    print(
-                        f"\n{Fore.LIGHTYELLOW_EX}[Tool: {action}]{Style.RESET_ALL}\n"
-                        f"{tool_result}\n"
-                    )
+                # Always show real tool output — prevents LLM hallucinating observations
+                print(
+                    f"\n{Fore.LIGHTYELLOW_EX}[Tool: {action}]{Style.RESET_ALL}\n"
+                    f"{tool_result}\n"
+                )
 
+                # Append real observation — LLM MUST NOT invent observations
                 self.prompt.prompt += (
                     f"\nThought: {parsed.get('Thought', '')}"
                     f"\nAction: {action}"
                     f"\nAction Input: {action_input}"
                     f"\nObservation: {tool_result}"
+                    f"\n\n--- STOP. The above Observation is real. Do NOT assume or invent observations. Continue from here. ---"
                 )
 
         return "Maximum iterations reached without a final answer."
