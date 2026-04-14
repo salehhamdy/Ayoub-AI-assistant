@@ -17,10 +17,12 @@ from pathlib import Path
 # ── Static model catalog ──────────────────────────────────────────────────────
 CATALOG: dict[str, list[str]] = {
     "gemini": [
-        "gemini-1.5-flash",      # fast, free tier ✅
-        "gemini-1.5-pro",        # more capable
-        "gemini-2.0-flash",      # newest stable
-        "gemini-2.0-flash-exp",  # experimental
+        "gemini-3-flash-preview",          # Gemini 3 Flash — latest, free preview ✅
+        "gemini-2.5-flash",                # Gemini 2.5 Flash — stable
+        "gemini-2.5-pro",                  # Gemini 2.5 Pro — most capable
+        "gemini-2.0-flash",                # Gemini 2.0 Flash — stable, 15 RPM
+        "gemini-2.0-flash-lite",           # Gemini 2.0 Flash Lite — 30 RPM
+        "gemini-flash-latest",             # Always latest flash model
     ],
     "groq": [
         "llama-3.3-70b-versatile",
@@ -43,12 +45,15 @@ CATALOG: dict[str, list[str]] = {
 }
 
 _PROVIDER_DESCRIPTIONS = {
-    "gemini":   "Google Gemini      — free tier, vision support",
+    "gemini":   "Google Gemini      — free tier, vision, embedding (100 RPM)",
     "groq":     "Groq               — ultra-fast inference, free",
     "deepseek": "DeepSeek           — best reasoning, very cheap",
     "openai":   "OpenAI             — GPT-4o, requires paid key",
     "ollama":   "Ollama (local)     — offline, private, no API key",
 }
+
+# ── Gemini Embedding info (shown in -lm, not switchable as a chat model) ──────
+GEMINI_EMBEDDING_MODEL = "gemini-embedding-001"  # 100 RPM, 3072-dim vectors
 
 
 def _get_ollama_models() -> list[str]:
@@ -137,6 +142,9 @@ def run_list_models() -> None:
         print()
 
     print("  Switch with:  ayoub -sw")
+    print()
+    print("  Embedding Model (always active, 100 RPM free):")
+    print(f"    {GEMINI_EMBEDDING_MODEL}  — 3072-dim vectors, semantic memory")
     print("═" * 58 + "\n")
 
 
