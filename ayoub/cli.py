@@ -25,6 +25,9 @@ Examples:
   ayoub -fs "deep learning papers 2024"          (full search)
   ayoub -G "a futuristic city at sunset"         (generate images)
   ayoub -w "What's on my screen?"                (screen analysis)
+  ayoub -co "Explain black holes"                (4 Ollama models collaborate)
+  ayoub -sw                                      (switch model interactively)
+  ayoub -lm                                      (list all available models)
   ayoub -t my_template                           (show template)
   ayoub -tl                                      (list templates)
   ayoub -memshow chat_memory                     (view memory)
@@ -63,6 +66,9 @@ def _build_parser() -> argparse.ArgumentParser:
     group.add_argument("-searchclr",           action="store_true", help="Clear search history")
     group.add_argument("-viewlogs",            action="store_true", help="Print the log file")
     group.add_argument("-clrlogs",             action="store_true", help="Clear the log file")
+    group.add_argument("-sw", "--switch",      action="store_true", help="Interactive menu to switch provider / model")
+    group.add_argument("-lm", "--listmodels",   action="store_true", help="List all available models by provider")
+    group.add_argument("-co", "--collaborate",  metavar="Q",         help="All 4 Ollama models collaborate on your question")
 
     # Bare positional — defaults to -m
     parser.add_argument("query", nargs="?", help="Question (defaults to main ReAct agent)")
@@ -156,6 +162,18 @@ def main() -> None:
         if LOG_FILE.exists():
             LOG_FILE.write_text("", encoding="utf-8")
             print("Log file cleared.")
+
+    elif args.switch:
+        from ayoub.modules.model_switcher import run_switch
+        run_switch()
+
+    elif args.listmodels:
+        from ayoub.modules.model_switcher import run_list_models
+        run_list_models()
+
+    elif args.collaborate:
+        from ayoub.modules.ollama_collab import run_collaborate
+        run_collaborate(args.collaborate)
 
     elif args.main or args.query:
         # Default: main ReAct agent
