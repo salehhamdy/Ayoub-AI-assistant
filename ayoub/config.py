@@ -11,9 +11,10 @@ load_dotenv()
 
 # ── LLM Provider ─────────────────────────────────────────────────────────────
 # Options: "gemini" | "openai" | "groq" | "ollama"
-LLM_PROVIDER    = os.getenv("LLM_PROVIDER", "gemini")
-LLM_MODEL       = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+LLM_PROVIDER    = os.getenv("LLM_PROVIDER", "groq")
+LLM_MODEL       = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
+API_CALL_DELAY  = float(os.getenv("API_CALL_DELAY", "5"))  # seconds between API calls)
 
 # ── API Keys ──────────────────────────────────────────────────────────────────
 GOOGLE_API_KEY  = os.getenv("GOOGLE_API_KEY", "")

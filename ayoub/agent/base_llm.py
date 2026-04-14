@@ -4,11 +4,12 @@ ayoub/agent/base_llm.py — AgentLLM wrapper.
 Wraps build_llm() and adds colorised streaming, invoke (non-streaming),
 and multimodal generation for screen/vision tasks.
 """
+import time
 from typing import Optional
 from colorama import Fore, Style
 
 from ayoub.llm import build_llm
-from ayoub.config import LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, GOOGLE_API_KEY
+from ayoub.config import LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, GOOGLE_API_KEY, API_CALL_DELAY
 
 _STYLES = {
     "default":  "",
@@ -41,7 +42,9 @@ class AgentLLM:
     # ── Streaming (used by runtimes) ──────────────────────────────────────────
 
     def stream(self, prompt: str):
-        """Yield raw text chunks from the LLM."""
+        """Yield raw text chunks from the LLM. Waits API_CALL_DELAY seconds first."""
+        if API_CALL_DELAY > 0:
+            time.sleep(API_CALL_DELAY)
         yield from self._llm.stream(prompt)
 
     def generate_response(self, prompt: str, output_style: str = "cyan") -> str:
@@ -59,6 +62,8 @@ class AgentLLM:
 
     def invoke_response(self, prompt: str) -> str:
         """Non-streaming single call — returns the complete response string."""
+        if API_CALL_DELAY > 0:
+            time.sleep(API_CALL_DELAY)
         return self._llm.generate(prompt)
 
     # ── ReAct compatibility alias ─────────────────────────────────────────────
@@ -81,7 +86,7 @@ class AgentLLM:
             from PIL import Image
 
             genai.configure(api_key=GOOGLE_API_KEY)
-            vision_model = genai.GenerativeModel("gemini-2.5-flash")
+            vision_model = genai.GenerativeModel("gemini-2.0-flash")
             img = Image.open(img_path)
             result = vision_model.generate_content([prompt, img])
             return result.text
