@@ -75,21 +75,24 @@ class AgentLLM:
 
     def multimodal_generate(self, prompt: str, img_path: Optional[str] = None) -> str:
         """
-        Vision call using Google Gemini.
+        Vision call using Google Gemini (google-genai 1.x SDK).
         Falls back to text-only if no image is provided.
         """
         if img_path is None:
             return self.invoke_response(prompt)
 
         try:
-            import google.generativeai as genai
+            from google import genai as google_genai
+            from google.genai import types as genai_types
             from PIL import Image
 
-            genai.configure(api_key=GOOGLE_API_KEY)
-            vision_model = genai.GenerativeModel("gemini-2.0-flash")
+            client = google_genai.Client(api_key=GOOGLE_API_KEY)
             img = Image.open(img_path)
-            result = vision_model.generate_content([prompt, img])
-            return result.text
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=[prompt, img],
+            )
+            return response.text
         except Exception as exc:
             return f"[Vision error: {exc}]"
 

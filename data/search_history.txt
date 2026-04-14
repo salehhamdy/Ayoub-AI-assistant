@@ -9,3 +9,14 @@ Query: AI news and updates 2024
 
 Query: latest AI news 2025
   Link: https://www.artificialintelligence-news.com/
+
+Query: Python programming language history
+  Link: https://en.wikipedia.org/wiki/Python_(programming_language)
+
+Query: Python programming language development history
+  Link: https://en.wikipedia.org/wiki/Python_(programming_language)
+
+Query: benefits of Python for data science
+  Link: https://www.geeksforgeeks.org/data-science/python-for-data-science/
+  Link: https://codingbrushup.com/the-benefits-of-using-python-for-data-science-projects/
+  Link: https://datascienceeco.com/using-python-for-data-science/
