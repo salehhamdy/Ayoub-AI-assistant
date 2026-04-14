@@ -48,3 +48,7 @@ MEMORY_DIR      = DATA_DIR / "memory"
 TMP_DIR         = DATA_DIR / "tmp"
 SEARCH_HISTORY  = DATA_DIR / "search_history.txt"
 LOG_FILE        = LOGS_DIR / "ayoub.log"
+
+# -- Version ------------------------------------------------------------------
+AYOUB_VERSION = '2.0.0'  # Major: Gemini 3 Flash + Embedding 1 + Pollinations
+
