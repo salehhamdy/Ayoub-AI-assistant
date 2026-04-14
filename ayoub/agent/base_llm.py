@@ -9,7 +9,7 @@ from typing import Optional
 from colorama import Fore, Style
 
 from ayoub.llm import build_llm
-from ayoub.config import LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, GOOGLE_API_KEY, API_CALL_DELAY
+from ayoub.config import LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, GOOGLE_API_KEY, GROQ_API_KEY, API_CALL_DELAY
 
 _STYLES = {
     "default":  "",
@@ -75,26 +75,81 @@ class AgentLLM:
 
     def multimodal_generate(self, prompt: str, img_path: Optional[str] = None) -> str:
         """
-        Vision call using Google Gemini (google-genai 1.x SDK).
+        Vision analysis cascade:
+          1. Google Gemini  gemini-2.0-flash       (best quality)
+          2. Groq Vision    llama-3.2-90b-vision   (free fallback, no quota issues)
         Falls back to text-only if no image is provided.
         """
         if img_path is None:
             return self.invoke_response(prompt)
 
-        try:
-            from google import genai as google_genai
-            from google.genai import types as genai_types
-            from PIL import Image
+        # ── 1. Try Gemini Vision ──────────────────────────────────────────────
+        if GOOGLE_API_KEY:
+            try:
+                from google import genai as google_genai
+                from PIL import Image
 
-            client = google_genai.Client(api_key=GOOGLE_API_KEY)
-            img = Image.open(img_path)
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=[prompt, img],
-            )
-            return response.text
-        except Exception as exc:
-            return f"[Vision error: {exc}]"
+                client  = google_genai.Client(api_key=GOOGLE_API_KEY)
+                img     = Image.open(img_path)
+                response = client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents=[prompt, img],
+                )
+                return response.text
+            except Exception as gemini_exc:
+                _is_quota = "429" in str(gemini_exc) or "RESOURCE_EXHAUSTED" in str(gemini_exc)
+                if _is_quota:
+                    print("[vision] Gemini quota exhausted — switching to Groq Vision ...")
+                else:
+                    print(f"[vision] Gemini error: {gemini_exc}")
+
+        # ── 2. Fallback: Groq Vision (base64) ────────────────────────────────
+        if GROQ_API_KEY:
+            # Current Groq vision models (in order of preference)
+            _GROQ_VISION_MODELS = [
+                "meta-llama/llama-4-scout-17b-16e-instruct",   # Llama 4 Scout (multimodal)
+                "meta-llama/llama-4-maverick-17b-128e-instruct",# Llama 4 Maverick
+                "llama-3.2-11b-vision-preview",                 # Older, might still work
+            ]
+            try:
+                import base64
+                from groq import Groq
+
+                with open(img_path, "rb") as f:
+                    img_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+                ext  = str(img_path).rsplit(".", 1)[-1].lower()
+                mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg",
+                        "png": "image/png",  "webp": "image/webp"}.get(ext, "image/png")
+
+                groq_client = Groq(api_key=GROQ_API_KEY)
+
+                for vision_model in _GROQ_VISION_MODELS:
+                    try:
+                        print(f"[vision] Trying Groq model: {vision_model}")
+                        completion = groq_client.chat.completions.create(
+                            model=vision_model,
+                            messages=[{
+                                "role": "user",
+                                "content": [
+                                    {"type": "text",      "text": prompt},
+                                    {"type": "image_url", "image_url": {
+                                        "url": f"data:{mime};base64,{img_b64}"
+                                    }},
+                                ],
+                            }],
+                            max_tokens=2048,
+                        )
+                        print(f"[vision] Using Groq model: {vision_model}")
+                        return completion.choices[0].message.content
+                    except Exception as model_exc:
+                        print(f"[vision] {vision_model} failed: {model_exc}")
+                        continue
+
+            except Exception as groq_exc:
+                print(f"[vision] Groq Vision error: {groq_exc}")
+
+        return "[Vision error: No vision provider available. Check GOOGLE_API_KEY or GROQ_API_KEY.]"
 
     def __repr__(self) -> str:
         return f"AgentLLM(provider={self._provider!r}, model={self._model!r})"
