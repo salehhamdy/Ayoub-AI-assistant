@@ -23,6 +23,10 @@ CATALOG: dict[str, list[str]] = {
         "gemini-2.0-flash",                # Gemini 2.0 Flash — stable, 15 RPM
         "gemini-2.0-flash-lite",           # Gemini 2.0 Flash Lite — 30 RPM
         "gemini-flash-latest",             # Always latest flash model
+        # ── Gemma (open-weight, via Gemini API) ──────────────────────────────
+        "gemma-3-27b-it",                  # Gemma 3 27B — 30 RPM, strong open model ✅
+        "gemma-3-12b-it",                  # Gemma 3 12B — lighter
+        "gemma-3-4b-it",                   # Gemma 3 4B — fastest
     ],
     "groq": [
         "llama-3.3-70b-versatile",
@@ -45,11 +49,11 @@ CATALOG: dict[str, list[str]] = {
 }
 
 _PROVIDER_DESCRIPTIONS = {
-    "gemini":   "Google Gemini      — free tier, vision, embedding (100 RPM)",
-    "groq":     "Groq               — ultra-fast inference, free",
-    "deepseek": "DeepSeek           — best reasoning, very cheap",
-    "openai":   "OpenAI             — GPT-4o, requires paid key",
-    "ollama":   "Ollama (local)     — offline, private, no API key",
+    "gemini":   "Google Gemini      -- free tier, vision, embedding (100 RPM)",
+    "groq":     "Groq               -- ultra-fast inference, free",
+    "deepseek": "DeepSeek           -- best reasoning, very cheap",
+    "openai":   "OpenAI             -- GPT-4o, requires paid key",
+    "ollama":   "Ollama (local)     -- offline, private, no API key",
 }
 
 # ── Gemini Embedding info (shown in -lm, not switchable as a chat model) ──────
@@ -127,25 +131,25 @@ def run_list_models() -> None:
     catalog = dict(CATALOG)
     catalog["ollama"] = ollama_installed or ["(no models installed — run: ollama pull llama3.1)"]
 
-    print("\n" + "═" * 58)
-    print("  Ayoub — Available AI Models")
-    print("═" * 58)
+    print("\n" + "=" * 58)
+    print("  Ayoub -- Available AI Models")
+    print("=" * 58)
     print(f"  Current: [{current_provider}] {current_model}\n")
 
     for provider, models in catalog.items():
-        marker = "▶" if provider == current_provider else " "
+        marker = ">" if provider == current_provider else " "
         desc = _PROVIDER_DESCRIPTIONS.get(provider, provider)
         print(f"  {marker} {desc}")
         for m in models:
-            active = "✓" if (provider == current_provider and m == current_model) else " "
+            active = "*" if (provider == current_provider and m == current_model) else " "
             print(f"      [{active}] {m}")
         print()
 
     print("  Switch with:  ayoub -sw")
     print()
     print("  Embedding Model (always active, 100 RPM free):")
-    print(f"    {GEMINI_EMBEDDING_MODEL}  — 3072-dim vectors, semantic memory")
-    print("═" * 58 + "\n")
+    print(f"    {GEMINI_EMBEDDING_MODEL}  -- 3072-dim vectors, semantic memory")
+    print("=" * 58 + "\n")
 
 
 def run_switch() -> None:
@@ -161,8 +165,8 @@ def run_switch() -> None:
     for provider, models in catalog.items():
         desc = _PROVIDER_DESCRIPTIONS.get(provider, provider)
         for model in models:
-            active = " ✓" if (provider == current_provider and model == current_model) else ""
-            label = f"{desc}  →  {model}{active}"
+            active = " *" if (provider == current_provider and model == current_model) else ""
+            label = f"{desc}  ->  {model}{active}"
             options.append((label, provider, model))
 
     if not options:
@@ -170,13 +174,13 @@ def run_switch() -> None:
         return
 
     # Print menu
-    print("\n" + "═" * 64)
-    print("  Ayoub — Switch Model")
+    print("\n" + "=" * 64)
+    print("  Ayoub -- Switch Model")
     print(f"  Current: [{current_provider}] {current_model}")
-    print("═" * 64)
+    print("=" * 64)
     for i, (label, _, _) in enumerate(options, 1):
         print(f"  {i:>3}.  {label}")
-    print("═" * 64)
+    print("=" * 64)
     print("  Enter number to switch  (or 0 / Enter to cancel)\n")
 
     try:
@@ -199,7 +203,7 @@ def run_switch() -> None:
         return
 
     if _write_to_env(new_provider, new_model):
-        print(f"\n  ✅ Switched to [{new_provider}] {new_model}")
-        print("  Change saved to .env — effective immediately.\n")
+        print(f"\n  [OK] Switched to [{new_provider}] {new_model}")
+        print("  Change saved to .env -- effective immediately.\n")
     else:
-        print("  ❌ Failed to update .env")
+        print("  [ERROR] Failed to update .env")
