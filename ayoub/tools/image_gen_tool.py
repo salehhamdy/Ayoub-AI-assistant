@@ -23,19 +23,46 @@ class AyoubTxt2ImgTool(BaseTool):
         super().__init__(description, tool_name)
         OUTPUT_IMGS_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Ordered list of Gradio spaces to try (first working one is used)
+    _SPACES = [
+        ("mukaist/DALLE-4k",           "/run"),
+        ("stabilityai/sdxl-turbo",     "/predict"),
+        ("hysts/SD-XL",                "/run"),
+    ]
+
     def execute_func(self, prompt: str) -> str:
         try:
             from gradio_client import Client
             from helpers.image_utils import save_imgs, show_images_side_by_side
+        except ImportError as exc:
+            return f"[image_to_text_tool] Missing dependency: {exc}"
 
-            client = Client("mukaist/DALLE-4k")
-            result = client.predict(prompt.strip(), api_name="/run")
-            img_dirs = [r["image"] for r in result[0]]
-            saved = save_imgs(img_dirs, str(OUTPUT_IMGS_DIR))
-            show_images_side_by_side(str(OUTPUT_IMGS_DIR))
-            return f"Images saved to: {', '.join(saved)}"
-        except Exception as exc:
-            return f"[image_to_text_tool] Error: {exc}"
+        prompt = prompt.strip()
+        last_err = ""
+
+        for space, api_name in self._SPACES:
+            try:
+                client = Client(space)
+                result = client.predict(prompt, api_name=api_name)
+                # result shape varies by space — normalise
+                if isinstance(result, list) and result and isinstance(result[0], list):
+                    img_dirs = [r["image"] for r in result[0] if isinstance(r, dict)]
+                elif isinstance(result, list):
+                    img_dirs = [r for r in result if isinstance(r, str)]
+                else:
+                    img_dirs = [str(result)]
+
+                if not img_dirs:
+                    continue
+
+                saved = save_imgs(img_dirs, str(OUTPUT_IMGS_DIR))
+                show_images_side_by_side(str(OUTPUT_IMGS_DIR))
+                return f"Images saved to: {', '.join(saved)}"
+            except Exception as exc:
+                last_err = f"[{space}] {exc}"
+                continue
+
+        return f"[image_to_text_tool] All spaces unavailable. Last error: {last_err}"
 
 
 class AyoubSketch2ImgTool(BaseTool):
