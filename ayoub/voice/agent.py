@@ -26,6 +26,10 @@ from ayoub.config import (
 
 CARTESIA_API_KEY = os.getenv("CARTESIA_API_KEY", "")
 
+# Module-level VAD handle — set in main() on the main thread before run_app()
+# (Silero plugin must be registered on the main thread)
+_VAD = None
+
 # ── JARVIS System Prompt ──────────────────────────────────────────────────────
 _SYSTEM_PROMPT = """\
 You are Ayoub — a JARVIS-inspired AI assistant serving your user with quiet
@@ -156,12 +160,10 @@ class AyoubVoiceAgent:
 # ── Entrypoint at MODULE LEVEL (critical fix for Windows pickling) ────────────
 async def entrypoint(agent_ctx) -> None:
     """
-    LiveKit agent entrypoint.
-    Must be a module-level function — Windows multiprocessing cannot pickle
-    local (nested) functions defined inside main().
+    LiveKit agent entrypoint — module-level for Windows pickling.
+    Uses _VAD which was pre-loaded on the main thread in main().
     """
     from livekit.agents.voice import Agent, AgentSession
-    from livekit.plugins import silero
 
     await agent_ctx.connect()
 
@@ -176,7 +178,7 @@ async def entrypoint(agent_ctx) -> None:
         stt=_build_stt(),
         llm=_build_llm(),
         tts=_build_tts(),
-        vad=silero.VAD.load(),
+        vad=_VAD,          # pre-loaded on main thread
     )
 
     class _AyoubAgent(Agent):
@@ -195,16 +197,23 @@ async def entrypoint(agent_ctx) -> None:
 # ── Entry points ──────────────────────────────────────────────────────────────
 def main() -> None:
     """Entry point for `ayoub-voice` console script."""
+    global _VAD
     _check_env()
 
     try:
         from livekit.agents import cli, WorkerOptions
+        from livekit.plugins import silero          # ← main thread registration
     except ImportError:
         print(
             "[ayoub-voice] Missing packages. Run:\n"
             "  pip install livekit-agents[silero] livekit-plugins-groq livekit-plugins-cartesia mcp"
         )
         sys.exit(1)
+
+    # Pre-load Silero VAD on the main thread — required by LiveKit
+    print("[ayoub-voice] Loading Silero VAD on main thread...")
+    _VAD = silero.VAD.load()
+    print("[ayoub-voice] VAD ready. Connecting to LiveKit...")
 
     # entrypoint is module-level — safe to pickle on Windows
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
