@@ -107,9 +107,10 @@ async def _list_mcp_tools() -> list:
 # ── Prewarm function — runs on main thread of each worker process ─────────────
 # This is the CORRECT place to register LiveKit plugins. LiveKit calls this
 # before dispatching any job, guaranteed on the main thread.
-async def prewarm(proc) -> None:
+def prewarm(proc) -> None:
     """
     Pre-warm function: import + register all plugins on the worker's main thread.
+    Must be a regular (sync) def — LiveKit calls prewarm_fnc WITHOUT await.
     Store heavy objects in proc.userdata so entrypoint() can reuse them.
     """
     # Importing these registers the plugins on the main thread of this process
