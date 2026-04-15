@@ -8,6 +8,9 @@ Provider stack (no OpenAI / no Sarvam / no Google Cloud required):
   VAD : Silero (local, offline)                             (no API key)
   MCP : mcp package → ClientSession + streamablehttp_client (connects to ayoub-server)
 
+FIX (2026-04-16): 'entrypoint' moved to module level so Windows multiprocessing
+can pickle it correctly (avoids "Can't get local object 'main.<locals>.entrypoint'").
+
 Usage:
   ayoub-server        # terminal 1 — start MCP tool server on :8000
   ayoub-voice         # terminal 2 — connect to LiveKit
@@ -46,6 +49,7 @@ Capabilities:
 """
 
 
+# ── Environment check ─────────────────────────────────────────────────────────
 def _check_env() -> None:
     missing = []
     for var, val in [
@@ -66,6 +70,7 @@ def _check_env() -> None:
         sys.exit(1)
 
 
+# ── Provider builders ─────────────────────────────────────────────────────────
 def _build_stt():
     """Groq Whisper large-v3 via livekit-plugins-groq."""
     from livekit.plugins.groq import STT
@@ -91,6 +96,7 @@ def _build_tts():
     )
 
 
+# ── MCP helpers ───────────────────────────────────────────────────────────────
 async def _call_mcp_tool(tool_name: str, arguments: dict) -> str:
     """
     Call a tool on the running ayoub-server via the mcp package.
@@ -105,7 +111,6 @@ async def _call_mcp_tool(tool_name: str, arguments: dict) -> str:
             async with ClientSession(read, write) as mcp_session:
                 await mcp_session.initialize()
                 result = await mcp_session.call_tool(tool_name, arguments)
-                # result.content is a list of content blocks
                 return "\n".join(
                     block.text for block in result.content
                     if hasattr(block, "text")
@@ -130,14 +135,70 @@ async def _list_mcp_tools() -> list:
         return []
 
 
+# ── Voice Agent class (module-level so it is picklable on Windows) ─────────
+class AyoubVoiceAgent:
+    """Defined at module level — required for Windows multiprocessing pickle."""
+
+    def __new__(cls, *args, **kwargs):
+        # Lazy import: only resolved when the worker process actually starts
+        from livekit.agents.voice import Agent
+        instance = object.__new__(cls)
+        Agent.__init__(instance, instructions=_SYSTEM_PROMPT)
+        return instance
+
+    async def on_enter(self):
+        await self.say(
+            "Good to see you, sir. What shall we tackle today?",
+            allow_interruptions=True,
+        )
+
+
+# ── Entrypoint at MODULE LEVEL (critical fix for Windows pickling) ────────────
+async def entrypoint(agent_ctx) -> None:
+    """
+    LiveKit agent entrypoint.
+    Must be a module-level function — Windows multiprocessing cannot pickle
+    local (nested) functions defined inside main().
+    """
+    from livekit.agents.voice import Agent, AgentSession
+    from livekit.plugins import silero
+
+    await agent_ctx.connect()
+
+    # Show which MCP tools are reachable (informational — non-blocking)
+    mcp_tools = await _list_mcp_tools()
+    if mcp_tools:
+        print(f"[ayoub-voice] MCP tools available: {mcp_tools}")
+    else:
+        print("[ayoub-voice] MCP server not reachable — running without tools.")
+
+    session = AgentSession(
+        stt=_build_stt(),
+        llm=_build_llm(),
+        tts=_build_tts(),
+        vad=silero.VAD.load(),
+    )
+
+    class _AyoubAgent(Agent):
+        def __init__(self):
+            super().__init__(instructions=_SYSTEM_PROMPT)
+
+        async def on_enter(self):
+            await self.say(
+                "Good to see you, sir. What shall we tackle today?",
+                allow_interruptions=True,
+            )
+
+    await session.start(agent_ctx.room, agent=_AyoubAgent())
+
+
+# ── Entry points ──────────────────────────────────────────────────────────────
 def main() -> None:
     """Entry point for `ayoub-voice` console script."""
     _check_env()
 
     try:
-        from livekit.agents import cli, WorkerOptions, JobContext
-        from livekit.agents.voice import Agent, AgentSession
-        from livekit.plugins import silero
+        from livekit.agents import cli, WorkerOptions
     except ImportError:
         print(
             "[ayoub-voice] Missing packages. Run:\n"
@@ -145,35 +206,7 @@ def main() -> None:
         )
         sys.exit(1)
 
-    async def entrypoint(agent_ctx: JobContext) -> None:
-        await agent_ctx.connect()
-
-        # Show which MCP tools are reachable (informational — non-blocking)
-        mcp_tools = await _list_mcp_tools()
-        if mcp_tools:
-            print(f"[ayoub-voice] MCP tools available: {mcp_tools}")
-        else:
-            print("[ayoub-voice] MCP server not reachable — running without tools.")
-
-        session = AgentSession(
-            stt=_build_stt(),
-            llm=_build_llm(),
-            tts=_build_tts(),
-            vad=silero.VAD.load(),
-        )
-
-        class AyoubVoiceAgent(Agent):
-            def __init__(self):
-                super().__init__(instructions=_SYSTEM_PROMPT)
-
-            async def on_enter(self):
-                await self.say(
-                    "Good to see you, sir. What shall we tackle today?",
-                    allow_interruptions=True,
-                )
-
-        await session.start(agent_ctx.room, agent=AyoubVoiceAgent())
-
+    # entrypoint is module-level — safe to pickle on Windows
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
 
 

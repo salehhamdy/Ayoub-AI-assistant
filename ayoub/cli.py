@@ -71,7 +71,8 @@ MENU = {
     "15": ("List Available Models",   "listmodels"),
     "16": ("Model Collaboration",     "collaborate"),
     "17": ("Usage Examples",          "usage"),
-    "18": ("Exit",                    "exit"),
+    "18": ("Voice Mode (JARVIS)",     "voice"),
+    "19": ("Exit",                    "exit"),
 }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -95,6 +96,8 @@ def _print_menu() -> None:
             name = Fore.RED + f"  {label}" + RESET
         elif label == "Usage Examples":
             name = Fore.MAGENTA + BOLD + f"  {label}" + RESET
+        elif label.startswith("Voice"):
+            name = Fore.CYAN + BOLD + f"  {label}  🎤" + RESET
         else:
             name = GREEN + f"  {label}" + RESET
         print(f"{num}{name}")
