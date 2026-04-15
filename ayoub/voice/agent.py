@@ -1,15 +1,16 @@
 """
 ayoub/voice/agent.py — JARVIS-style LiveKit voice agent.
 
-Provider stack (no OpenAI / no Sarvam / no Google Cloud required):
+Provider stack:
   STT : livekit-plugins-groq  → Groq Whisper large-v3    (free, GROQ_API_KEY)
   LLM : livekit-plugins-groq  → llama-3.3-70b-versatile   (free, GROQ_API_KEY)
   TTS : livekit-plugins-cartesia → Sonic English            (free tier)
   VAD : Silero (local, offline)                             (no API key)
-  MCP : mcp package → ClientSession + streamablehttp_client (connects to ayoub-server)
+  MCP : mcp package → ClientSession + streamablehttp_client
 
-FIX (2026-04-16): 'entrypoint' moved to module level so Windows multiprocessing
-can pickle it correctly (avoids "Can't get local object 'main.<locals>.entrypoint'").
+FIX (2026-04-16): All plugins are registered inside prewarm_fnc(), which LiveKit
+guarantees runs on the main thread of each worker process. This avoids the
+"Plugins must be registered on the main thread" RuntimeError on Windows.
 
 Usage:
   ayoub-server        # terminal 1 — start MCP tool server on :8000
@@ -26,10 +27,6 @@ from ayoub.config import (
 
 CARTESIA_API_KEY = os.getenv("CARTESIA_API_KEY", "")
 
-# Module-level VAD handle — set in main() on the main thread before run_app()
-# (Silero plugin must be registered on the main thread)
-_VAD = None
-
 # ── JARVIS System Prompt ──────────────────────────────────────────────────────
 _SYSTEM_PROMPT = """\
 You are Ayoub — a JARVIS-inspired AI assistant serving your user with quiet
@@ -45,7 +42,6 @@ Communication rules:
 - Speak in 2-4 sentences maximum per response.
 - No markdown, no bullet points — plain prose only.
 - Do not narrate tool names or internals — just deliver results.
-- If you fetch news, silently call open_world_monitor_tool immediately after.
 
 Capabilities:
 - Search the web, fetch URLs, get current time and system info.
@@ -74,47 +70,17 @@ def _check_env() -> None:
         sys.exit(1)
 
 
-# ── Provider builders ─────────────────────────────────────────────────────────
-def _build_stt():
-    """Groq Whisper large-v3 via livekit-plugins-groq."""
-    from livekit.plugins.groq import STT
-    return STT(api_key=GROQ_API_KEY, model="whisper-large-v3")
-
-
-def _build_llm():
-    """Groq llama-3.3-70b via livekit-plugins-groq."""
-    from livekit.plugins.groq import LLM
-    return LLM(api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile")
-
-
-def _build_tts():
-    """
-    Cartesia Sonic English TTS.
-    Voice: 79a125e8-cd45-4c13-8a67-188112f4dd22 (British male — JARVIS-like)
-    """
-    from livekit.plugins.cartesia import TTS
-    return TTS(
-        api_key=CARTESIA_API_KEY,
-        voice="79a125e8-cd45-4c13-8a67-188112f4dd22",
-        model="sonic-english",
-    )
-
-
 # ── MCP helpers ───────────────────────────────────────────────────────────────
 async def _call_mcp_tool(tool_name: str, arguments: dict) -> str:
-    """
-    Call a tool on the running ayoub-server via the mcp package.
-    Returns the tool result as a string, or an error message.
-    """
     try:
         from mcp import ClientSession
         from mcp.client.streamable_http import streamablehttp_client
 
         url = f"http://localhost:{MCP_SERVER_PORT}/mcp"
         async with streamablehttp_client(url) as (read, write, _):
-            async with ClientSession(read, write) as mcp_session:
-                await mcp_session.initialize()
-                result = await mcp_session.call_tool(tool_name, arguments)
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                result = await session.call_tool(tool_name, arguments)
                 return "\n".join(
                     block.text for block in result.content
                     if hasattr(block, "text")
@@ -124,61 +90,68 @@ async def _call_mcp_tool(tool_name: str, arguments: dict) -> str:
 
 
 async def _list_mcp_tools() -> list:
-    """Return tool names available on ayoub-server. Empty list if server is down."""
     try:
         from mcp import ClientSession
         from mcp.client.streamable_http import streamablehttp_client
 
         url = f"http://localhost:{MCP_SERVER_PORT}/mcp"
         async with streamablehttp_client(url) as (read, write, _):
-            async with ClientSession(read, write) as mcp_session:
-                await mcp_session.initialize()
-                tools = await mcp_session.list_tools()
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                tools = await session.list_tools()
                 return [t.name for t in tools.tools]
     except Exception:
         return []
 
 
-# ── Voice Agent class (module-level so it is picklable on Windows) ─────────
-class AyoubVoiceAgent:
-    """Defined at module level — required for Windows multiprocessing pickle."""
-
-    def __new__(cls, *args, **kwargs):
-        # Lazy import: only resolved when the worker process actually starts
-        from livekit.agents.voice import Agent
-        instance = object.__new__(cls)
-        Agent.__init__(instance, instructions=_SYSTEM_PROMPT)
-        return instance
-
-    async def on_enter(self):
-        await self.say(
-            "Good to see you, sir. What shall we tackle today?",
-            allow_interruptions=True,
-        )
-
-
-# ── Entrypoint at MODULE LEVEL (critical fix for Windows pickling) ────────────
-async def entrypoint(agent_ctx) -> None:
+# ── Prewarm function — runs on main thread of each worker process ─────────────
+# This is the CORRECT place to register LiveKit plugins. LiveKit calls this
+# before dispatching any job, guaranteed on the main thread.
+async def prewarm(proc) -> None:
     """
-    LiveKit agent entrypoint — module-level for Windows pickling.
-    Uses _VAD which was pre-loaded on the main thread in main().
+    Pre-warm function: import + register all plugins on the worker's main thread.
+    Store heavy objects in proc.userdata so entrypoint() can reuse them.
+    """
+    # Importing these registers the plugins on the main thread of this process
+    from livekit.plugins.groq import STT, LLM          # also registers openai plugin
+    from livekit.plugins.cartesia import TTS
+    from livekit.plugins import silero
+
+    print("[ayoub-voice] Prewarm: loading Silero VAD...")
+    proc.userdata["vad"] = silero.VAD.load()
+    print("[ayoub-voice] Prewarm complete — plugins registered, VAD ready.")
+
+
+# ── Entrypoint — module-level for Windows pickling ───────────────────────────
+async def entrypoint(ctx) -> None:
+    """
+    LiveKit job entrypoint. All plugins are already registered via prewarm().
+    Imports here are safe — they resolve from cache, no re-registration.
     """
     from livekit.agents.voice import Agent, AgentSession
+    from livekit.plugins.groq import STT, LLM
+    from livekit.plugins.cartesia import TTS
 
-    await agent_ctx.connect()
+    await ctx.connect()
 
-    # Show which MCP tools are reachable (informational — non-blocking)
     mcp_tools = await _list_mcp_tools()
     if mcp_tools:
         print(f"[ayoub-voice] MCP tools available: {mcp_tools}")
     else:
         print("[ayoub-voice] MCP server not reachable — running without tools.")
 
+    # Retrieve the pre-loaded VAD from prewarm userdata
+    vad = ctx.proc.userdata.get("vad")
+
     session = AgentSession(
-        stt=_build_stt(),
-        llm=_build_llm(),
-        tts=_build_tts(),
-        vad=_VAD,          # pre-loaded on main thread
+        stt=STT(api_key=GROQ_API_KEY, model="whisper-large-v3"),
+        llm=LLM(api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile"),
+        tts=TTS(
+            api_key=CARTESIA_API_KEY,
+            voice="79a125e8-cd45-4c13-8a67-188112f4dd22",
+            model="sonic-english",
+        ),
+        vad=vad,
     )
 
     class _AyoubAgent(Agent):
@@ -191,18 +164,16 @@ async def entrypoint(agent_ctx) -> None:
                 allow_interruptions=True,
             )
 
-    await session.start(agent_ctx.room, agent=_AyoubAgent())
+    await session.start(ctx.room, agent=_AyoubAgent())
 
 
 # ── Entry points ──────────────────────────────────────────────────────────────
 def main() -> None:
     """Entry point for `ayoub-voice` console script."""
-    global _VAD
     _check_env()
 
     try:
         from livekit.agents import cli, WorkerOptions
-        from livekit.plugins import silero          # ← main thread registration
     except ImportError:
         print(
             "[ayoub-voice] Missing packages. Run:\n"
@@ -210,13 +181,11 @@ def main() -> None:
         )
         sys.exit(1)
 
-    # Pre-load Silero VAD on the main thread — required by LiveKit
-    print("[ayoub-voice] Loading Silero VAD on main thread...")
-    _VAD = silero.VAD.load()
-    print("[ayoub-voice] VAD ready. Connecting to LiveKit...")
-
-    # entrypoint is module-level — safe to pickle on Windows
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
+    print("[ayoub-voice] Starting — plugins will be registered in prewarm...")
+    cli.run_app(WorkerOptions(
+        entrypoint_fnc=entrypoint,
+        prewarm_fnc=prewarm,       # ← registers all plugins on main thread of each worker
+    ))
 
 
 def dev() -> None:
