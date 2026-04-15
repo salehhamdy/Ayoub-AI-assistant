@@ -126,20 +126,28 @@ def prewarm(proc) -> None:
 # ── Entrypoint — module-level for Windows pickling ───────────────────────────
 async def entrypoint(ctx) -> None:
     """
-    LiveKit job entrypoint. All plugins are already registered via prewarm().
-    Imports here are safe — they resolve from cache, no re-registration.
+    LiveKit job entrypoint — module-level for Windows pickling.
+    All plugins already registered via prewarm().
     """
+    import asyncio
+    from livekit.agents import AutoSubscribe
     from livekit.agents.voice import Agent, AgentSession
     from livekit.plugins.groq import STT, LLM
     from livekit.plugins.cartesia import TTS
 
-    await ctx.connect()
+    # Subscribe to audio only — required for voice agents
+    await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
     mcp_tools = await _list_mcp_tools()
     if mcp_tools:
         print(f"[ayoub-voice] MCP tools available: {mcp_tools}")
     else:
         print("[ayoub-voice] MCP server not reachable — running without tools.")
+
+    # Wait for the human participant to be ready before starting
+    print("[ayoub-voice] Waiting for participant...")
+    participant = await ctx.wait_for_participant()
+    print(f"[ayoub-voice] Participant joined: {participant.identity}")
 
     # Retrieve the pre-loaded VAD from prewarm userdata
     vad = ctx.proc.userdata.get("vad")
@@ -160,12 +168,15 @@ async def entrypoint(ctx) -> None:
             super().__init__(instructions=_SYSTEM_PROMPT)
 
         async def on_enter(self):
+            # Small delay to let the audio pipeline fully initialise
+            await asyncio.sleep(1)
             await self.say(
                 "Good to see you, sir. What shall we tackle today?",
                 allow_interruptions=True,
             )
 
-    await session.start(ctx.room, agent=_AyoubAgent())
+    # Pass participant so the session knows who to listen to
+    await session.start(ctx.room, agent=_AyoubAgent(), participant=participant)
 
 
 # ── Entry points ──────────────────────────────────────────────────────────────
