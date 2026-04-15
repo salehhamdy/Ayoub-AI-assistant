@@ -1,4 +1,4 @@
-# 🤖 Ayoub — User Guide
+# 🤖 Ayoub — User Guide v2.0.0
 
 > *"Good to see you, sir. What shall we tackle today?"*
 
@@ -6,20 +6,90 @@
 
 ## What is Ayoub?
 
-**Ayoub** is your personal JARVIS-style AI assistant — a smart, fast, and fully local-capable agent that runs from your terminal and (optionally) responds to your voice.
+**Ayoub** is your personal JARVIS-style AI assistant — a smart, fast, and fully local-capable agent that runs from your terminal. It features a beautiful interactive menu, multi-provider LLM support, persistent memory, web search, image generation, screen analysis, and multi-model collaboration.
 
-It can:
-- **Answer questions** instantly using any major AI model
-- **Search the internet** and summarise results for you
-- **Run Python code** and return the output
-- **Scrape web pages** and extract information
-- **Read PDF files** and answer questions about them
-- **Generate images** from text descriptions
-- **Analyse your screen** and tell you what it sees
-- **Remember your conversations** across sessions
-- **Hear your voice** and speak back (JARVIS-style)
-- **Run 4 local models in parallel** and synthesise the best answer
-- **Work completely offline** using local Ollama models
+### What Ayoub can do
+
+- 🤖 **Answer questions** using any major AI model (Groq, Gemini, DeepSeek, OpenAI, Ollama)
+- 🔍 **Search the internet** and summarise results in real-time
+- 🧠 **Remember your conversations** across sessions with persistent memory
+- 🖼️ **Generate images** from text using Pollinations.ai (free, no key)
+- 👁️ **Analyse your screen** with 6 auto-detected vision modes
+- 🤝 **Run 4 local models in parallel** and synthesise the best answer
+- 🔧 **Use 10 built-in prompt templates** for common tasks
+- 💻 **Work completely offline** using local Ollama models
+- 🎨 **Two CLI modes**: Enhanced Interactive Menu or Classic flag-based CLI
+
+---
+
+## Starting Ayoub
+
+Simply run:
+```bash
+ayoub
+```
+
+You'll see the ASCII banner and a **mode selector**:
+
+```
+  ┌───────────────────────────────────────────┐
+  │           CHOOSE YOUR CLI MODE            │
+  └───────────────────────────────────────────┘
+
+  [1]  Enhanced Interactive Menu
+       Guided numbered menu — best for exploration
+
+  [2]  Classic CLI  (flag-based)
+       Type flags directly, e.g.  -m "What is AI?"
+
+  ▶  Enter 1 or 2:
+```
+
+### Mode 1 — Enhanced Interactive Menu (Recommended)
+
+After choosing mode 1 you see the full service menu:
+
+```
+  [ 1]  Main Agent (ReAct)
+  [ 2]  Stateless Q&A
+  [ 3]  Human Feedback Mode
+  [ 4]  Chat with Memory
+  [ 5]  Quick Web Search
+  [ 6]  Full Scrape Search
+  [ 7]  Generate Images
+  [ 8]  Analyze Screen
+  [ 9]  Show Prompt Template
+  [10]  List Templates
+  [11]  Memory Management
+  [12]  Search History
+  [13]  System Logs
+  [14]  Switch Model/Provider
+  [15]  List Available Models
+  [16]  Model Collaboration
+  [17]  Usage Examples
+  [18]  Exit
+```
+
+**You can enter:**
+- A **number** (1–18)
+- A **keyword** like `search`, `generate`, `chat`, `exit`
+- `help` or `usage` to see the full command cheatsheet
+- `exit`, `quit`, `q`, or `bye` to close
+
+The menu stays open between tasks — Ayoub never closes until you ask it to.
+
+### Mode 2 — Classic CLI (flag-based)
+
+A persistent REPL prompt where you type flags directly:
+
+```
+  ayoub> -m "What is quantum computing?"
+  ayoub> -s "latest AI news"
+  ayoub> -G "a dragon in a cyberpunk city"
+  ayoub> help        ← show all commands
+  ayoub> examples    ← show usage cheatsheet
+  ayoub> exit        ← close
+```
 
 ---
 
@@ -30,43 +100,21 @@ Ayoub is not tied to one AI service. Switch at any time with `ayoub -sw`.
 | Provider | Speed | Cost | Best For |
 |---|---|---|---|
 | **Groq llama-3.3-70b** (default) | Ultra fast | Free | All-around, fastest |
-| **Gemini 2.0 Flash** | Fast | Free tier | Vision, screen analysis |
+| **Gemini 3 Flash Preview** | Fast | Free tier | Vision, screen analysis |
 | **DeepSeek Chat** | Fast | Very cheap | General reasoning |
 | **DeepSeek Reasoner** | Slower | Cheap | Hard math, deep thinking |
+| **OpenAI GPT-4o** | Fast | Paid | Best quality |
 | **Ollama (local)** | Hardware-dependent | Free forever | Privacy, offline, collaboration |
 
 ---
 
-## Installation (Already Done ✅)
+## Command Reference — All 21 Commands
 
-```bash
-# 1. Clone
-git clone https://github.com/salehhamdy/Ayoub-AI-assistant.git
-cd Ayoub-AI-assistant
-
-# 2. Install
-pip install -e .
-pip install -r requirements.txt
-
-# 3. Configure
-# Edit .env with your API keys (already done)
-
-# 4. Done
-ayoub -a "Hello Ayoub!"
-```
-
----
-
-## CLI Command Reference — All 21 Commands
-
----
-
-### ⚡ `-a` — Quick Ask (No memory, instant answer)
+### ⚡ `-a` — Quick Ask (stateless, no memory)
 ```bash
 ayoub -a "What is quantum computing?"
-ayoub -a "Explain what a neural network is"
 ayoub -a "Write a Python function to sort a list"
-ayoub -a "What is the difference between TCP and UDP?"
+ayoub -a "Explain the difference between TCP and UDP"
 ```
 
 ---
@@ -74,10 +122,10 @@ ayoub -a "What is the difference between TCP and UDP?"
 ### 💬 `-aH` — Ask with Follow-up
 ```bash
 ayoub -aH "Explain recursion to me"
-# Ayoub answers, then you can keep asking:
+# Ayoub answers, then you keep asking:
 # You: Can you give me a code example?
 # You: Now explain tail recursion
-# You: done   ← type done or press Enter to exit
+# You: done  ← type done or press Enter to exit
 ```
 
 ---
@@ -86,31 +134,31 @@ ayoub -aH "Explain recursion to me"
 ```bash
 ayoub -c "My name is Saleh and I'm a software engineer"
 ayoub -c "What did we talk about last time?"
-# Ayoub remembers you across sessions
+# Ayoub remembers across sessions
 ```
 
 ---
 
 ### 🔧 `-m` — Main Agent (Full ReAct, all tools)
 ```bash
-ayoub -m "Find the latest news about AI and summarise it"
+ayoub -m "Find the latest AI news and summarise it"
 ayoub -m "Calculate compound interest on 10000 at 5% for 10 years"
 ayoub -m "Write and run a Python script that prints Fibonacci numbers"
-ayoub "What is 22 * 33?"    # -m is the default, no flag needed
+ayoub "What is 22 * 33?"    # -m is the default
 ```
 
 ---
 
-### 🔍 `-s` — Web Search
+### 🔍 `-s` — Quick Web Search
 ```bash
-ayoub -s "best Python libraries for machine learning 2024"
+ayoub -s "best Python libraries for machine learning 2025"
 ayoub -s "latest news about SpaceX"
 ```
 
-### 🔍 `-fs` — Full Search (reads multiple pages)
+### 🔍 `-fs` — Full Scrape Search
 ```bash
 ayoub -fs "deep learning papers 2024"
-ayoub -fs "how to build a RAG system with LangChain"
+ayoub -fs "how to build a RAG system with Python"
 ```
 
 ---
@@ -119,8 +167,18 @@ ayoub -fs "how to build a RAG system with LangChain"
 ```bash
 ayoub -G "a futuristic city at sunset in cyberpunk style"
 ayoub -G "a portrait of a wise wizard in a magical forest"
+ayoub -G "photorealistic mountain landscape at golden hour"
 # Saved to: output/imgs/
 ```
+
+**Auto-style detection:**
+| Keyword in prompt | Model used | Style |
+|---|---|---|
+| photo, realistic | `flux-realism` | Photographic |
+| anime, manga | `flux-anime` | Anime |
+| 3d, render | `flux-3d` | 3D CGI |
+| painting, watercolor | `flux-cablyai` | Artistic |
+| (default) | `flux` | High quality |
 
 ---
 
@@ -129,7 +187,24 @@ ayoub -G "a portrait of a wise wizard in a magical forest"
 ayoub -w "What is on my screen right now?"
 ayoub -w "Summarise what I am reading"
 ayoub -w "Is there an error in this code on my screen?"
+ayoub -w "Extract all text from my screen"
+ayoub -w "Translate what is on my screen to English"
 ```
+
+**Auto-detected modes:**
+| Your question contains | Mode | What Ayoub does |
+|---|---|---|
+| code, script, function | `CODE` | Reviews code, finds bugs |
+| error, crash, exception | `ERROR` | Root cause + fix |
+| summarise, summary | `SUMMARISE` | Structured key points |
+| translate, arabic, french | `TRANSLATE` | Full translation |
+| read, extract, text | `OCR` | Extracts all visible text |
+| *(anything else)* | `DESCRIBE` | Full visual description |
+
+**Vision cascade (auto-fallback):**
+1. Google Gemini 2.0 Flash (best quality)
+2. Groq Llama 4 Scout 17B (if Gemini quota hit)
+3. Groq Llama 4 Maverick (secondary fallback)
 
 ---
 
@@ -137,14 +212,11 @@ ayoub -w "Is there an error in this code on my screen?"
 ```bash
 ayoub -co "Explain the theory of relativity"
 ayoub -co "What are the best practices for clean code?"
-ayoub -co "How does a transformer model work?"
 ```
 
-**How it works:**
+How it works:
 1. All 4 local models answer **in parallel** (colour-coded)
-2. `deepseek-r1:7b` (reasoning specialist) reads all 4 and writes a **synthesised final answer**
-
-Your 4 models and their roles:
+2. `deepseek-r1:7b` reads all answers and writes a **synthesised final answer**
 
 | Model | Colour | Role |
 |---|---|---|
@@ -157,118 +229,95 @@ Your 4 models and their roles:
 
 ---
 
-### 🔄 `-sw` — Switch Model (Interactive Menu)
+### 🔄 `-sw` — Switch Model / Provider
 ```bash
 ayoub -sw
 ```
-
-Opens a numbered menu of every provider and model. Pick a number → `.env` is updated instantly.
-
-Example:
-```
-  1.  Google Gemini      →  gemini-1.5-flash
-  2.  Google Gemini      →  gemini-2.0-flash ✓
-  3.  Groq               →  llama-3.3-70b-versatile
-  4.  Groq               →  mixtral-8x7b-32768
-  5.  DeepSeek           →  deepseek-chat
-  6.  DeepSeek           →  deepseek-reasoner
-  7.  Ollama (local)     →  llama3.1
-  8.  Ollama (local)     →  mistral
-  9.  Ollama (local)     →  deepseek-r1:7b
- 10.  Ollama (local)     →  phi3
-
-  Your choice: 7
-  ✅ Switched to [ollama] llama3.1
-```
-
----
+Opens a numbered menu of every provider and model. Pick a number → `.env` updated instantly.
 
 ### 📋 `-lm` — List All Models
 ```bash
 ayoub -lm
 ```
-Shows every model grouped by provider. Marks the current one with `✓`. Fetches your installed Ollama models live.
+Shows every model grouped by provider with RPM info. Marks current with `✓`.
 
 ---
 
-### 📁 Templates
+## Prompt Templates
+
+10 built-in templates are ready to use:
+
 ```bash
-ayoub -t my_template    # Show a template file
-ayoub -tl               # List all templates
+ayoub -tl                # list all templates
+ayoub -t summarize       # view a template
+ayoub -t code_review
+ayoub -t explain
+ayoub -t research
+ayoub -t translate
+ayoub -t write_email
+ayoub -t debug
+ayoub -t brainstorm
+ayoub -t plan
+ayoub -t image_prompt
 ```
-Create templates by saving `.txt` files to the `templates/` folder.
+
+| Template | Use Case |
+|---|---|
+| `summarize` | Concise bullet-point summary |
+| `code_review` | Bugs, security, performance review |
+| `explain` | Concept explanation with analogies |
+| `research` | Multi-source research with citations |
+| `translate` | Cultural-aware translation |
+| `write_email` | Professional email drafting |
+| `debug` | Root cause + fix for errors |
+| `brainstorm` | Idea generation with ratings |
+| `plan` | Project planning with phases/risks |
+| `image_prompt` | Optimised AI image generation prompts |
 
 ---
 
-### 🧠 Memory
+## Memory Management
+
 ```bash
 ayoub -memshow chat_memory      # View what Ayoub remembers
-ayoub -memclr chat_memory       # Clear memory (fresh start)
+ayoub -memclr chat_memory       # Clear a memory file (fresh start)
 ayoub -memlst                   # List all memory files
 ```
 
 ---
 
-### 🔍 Search History
+## Search History & Logs
+
 ```bash
 ayoub -searchshow    # View all past web searches
 ayoub -searchclr     # Clear search history
+ayoub -viewlogs      # View activity log
+ayoub -clrlogs       # Clear log file
 ```
 
 ---
 
-### 📄 Logs
+## Rate Limiting (`API_CALL_DELAY`)
+
+Ayoub waits between API calls to avoid free-tier rate limits.
+
 ```bash
-ayoub -viewlogs    # View activity log
-ayoub -clrlogs     # Clear log file
+# In .env:
+API_CALL_DELAY=5    # safe for Gemini free tier (default)
+API_CALL_DELAY=0    # no delay — use for Groq or Ollama
+API_CALL_DELAY=2    # balanced
 ```
 
----
-
-## Rate Limiting (API_CALL_DELAY)
-
-Ayoub waits **5 seconds between every API call** by default to avoid hitting free-tier rate limits.
-
-**You can adjust this in `.env`:**
-```bash
-API_CALL_DELAY=5    # default — safe for Gemini free tier
-API_CALL_DELAY=0    # no delay — use for Groq or Ollama (no rate limits)
-API_CALL_DELAY=2    # fast with some protection
-```
-
-**Recommended settings by provider:**
-
-| Provider | Recommended `API_CALL_DELAY` |
+| Provider | Recommended delay |
 |---|---|
-| Groq | `0` (no rate limit on free plan) |
-| Ollama | `0` (fully local, no API) |
+| Groq | `0` |
+| Ollama | `0` |
 | DeepSeek | `1` |
 | Gemini free tier | `5` |
 
 ---
 
-## Switching AI Models
-
-### Option 1 — Interactive (Recommended)
-```bash
-ayoub -sw     # pick from numbered list, .env updated instantly
-```
-
-### Option 2 — See all options first
-```bash
-ayoub -lm     # list everything, then use -sw to switch
-```
-
-### Option 3 — Manual `.env` edit
-```
-LLM_PROVIDER=groq
-LLM_MODEL=llama-3.3-70b-versatile
-API_CALL_DELAY=0
-```
-
----
-
-## Valid Model Names
+## Model Reference
 
 ### Groq (default, free, ultra-fast)
 ```
@@ -278,11 +327,13 @@ mixtral-8x7b-32768         ← long context
 gemma2-9b-it
 ```
 
-### Gemini (free tier)
+### Google Gemini
 ```
-gemini-2.0-flash           ← newest stable  ✅
-gemini-1.5-flash           ← (deprecated on free API)
-gemini-1.5-pro             ← long context
+gemini-3-flash-preview     ← newest, recommended
+gemini-2.5-flash
+gemini-2.5-pro
+gemini-2.0-flash
+gemini-2.0-flash-lite      (30 RPM)
 ```
 
 ### DeepSeek
@@ -291,133 +342,44 @@ deepseek-chat              ← fast, general
 deepseek-reasoner          ← deep thinking (like o1)
 ```
 
-### Ollama (local)
+### Ollama (local, offline)
 ```
-llama3.1       ✅ installed
-mistral        ✅ installed
-deepseek-r1:7b ✅ installed
-phi3           ✅ installed
+llama3.1
+mistral
+deepseek-r1:7b
+phi3
 ```
-
----
-
-## Using Ollama (Local/Offline)
-
-```bash
-# Check your installed models
-ollama list
-
-# Switch to Ollama
-ayoub -sw   # pick any Ollama model
-
-# Or edit .env manually:
-LLM_PROVIDER=ollama
-LLM_MODEL=llama3.1
-API_CALL_DELAY=0    # no delay needed for local models
-```
-
----
-
-## Voice Mode (JARVIS)
-
-```bash
-# Terminal 1
-ayoub-server
-
-# Terminal 2
-ayoub-voice dev
-```
-
-1. Open **https://agents-playground.livekit.io**
-2. Paste LiveKit URL: `wss://garv-1o3sb66f.livekit.cloud`
-3. Click Connect → allow microphone
-
-Ayoub greets you: *"Good to see you, sir. What shall we tackle today?"*
-
-**Voice stack:** Groq Whisper (STT) → Groq llama-3.3-70b (LLM) → Cartesia Sonic British male (TTS)
 
 ---
 
 ## Your `.env` at a Glance
 
 ```bash
-LLM_PROVIDER=groq                      # current default
+LLM_PROVIDER=groq
 LLM_MODEL=llama-3.3-70b-versatile
 LLM_TEMPERATURE=0.7
-API_CALL_DELAY=5                       # ← adjust per provider
+API_CALL_DELAY=0
 
-GOOGLE_API_KEY=...    ✅
-GROQ_API_KEY=...      ✅
-DEEPSEEK_API_KEY=...  ✅
-
-LIVEKIT_URL=...       ✅
-CARTESIA_API_KEY=...  ✅
+GOOGLE_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here
+DEEPSEEK_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
 ```
 
 ---
 
-## Complete Command Cheat Sheet
+## Tips & Power User Tricks
 
-```bash
-# ── Ask ──────────────────────────────────────────────────────
-ayoub -a  "question"      # Instant, no memory
-ayoub -aH "question"      # Interactive follow-up loop
-ayoub -c  "message"       # Persistent memory chat
-
-# ── Agent ────────────────────────────────────────────────────
-ayoub -m  "task"          # Full ReAct agent
-ayoub     "task"          # Same as -m (default)
-
-# ── Search ───────────────────────────────────────────────────
-ayoub -s  "query"         # Web search
-ayoub -fs "query"         # Deep search (all pages)
-
-# ── Create / Vision ──────────────────────────────────────────
-ayoub -G  "prompt"        # Generate images
-ayoub -w  "question"      # Analyse screen
-
-# ── Ollama Collaboration ─────────────────────────────────────
-ayoub -co "question"      # 4 models in parallel + synthesis
-
-# ── Model Management ─────────────────────────────────────────
-ayoub -sw                 # Switch model (interactive menu)
-ayoub -lm                 # List all available models
-
-# ── Templates ────────────────────────────────────────────────
-ayoub -t  name            # Show template
-ayoub -tl                 # List templates
-
-# ── Memory ───────────────────────────────────────────────────
-ayoub -memshow name       # View memory
-ayoub -memclr  name       # Clear memory
-ayoub -memlst             # List all memories
-
-# ── History & Logs ───────────────────────────────────────────
-ayoub -searchshow         # Search history
-ayoub -searchclr          # Clear searches
-ayoub -viewlogs           # View log
-ayoub -clrlogs            # Clear log
-
-# ── Services ─────────────────────────────────────────────────
-ayoub-server              # MCP tool server (:8000)
-ayoub-voice dev           # Voice agent (JARVIS)
-
-# ── Help ─────────────────────────────────────────────────────
-ayoub --help
-```
-
----
-
-## Tips
-
-| Goal | Command |
+| Goal | What to do |
 |---|---|
 | Fastest responses | `ayoub -sw` → pick Groq |
 | Best reasoning | `ayoub -sw` → pick `deepseek-reasoner` |
 | Full privacy | `ayoub -sw` → pick any Ollama model |
 | Multiple perspectives | `ayoub -co "question"` |
 | No rate limit wait | Set `API_CALL_DELAY=0` in `.env` |
-| Forgot a command | `ayoub --help` |
+| See all commands | Type `help` in the menu or run `ayoub --help` |
+| Quick task without menu | `ayoub -a "question"` (one-shot, no menu) |
+| Re-use a prompt structure | `ayoub -t template_name` then copy and fill `{{placeholders}}` |
 
 ---
 
