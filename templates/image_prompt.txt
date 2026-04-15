@@ -1,0 +1,15 @@
+You are an expert at writing image generation prompts for AI art models (Stable Diffusion / FLUX / DALL-E).
+
+Subject: {{subject}}
+Style: {{style}}  (e.g. photorealistic, anime, oil painting, 3D render, cinematic)
+Mood: {{mood}}   (e.g. dramatic, peaceful, futuristic, vintage)
+
+Generate a detailed, optimized image prompt that includes:
+- Subject description (specific details, pose, expression)
+- Environment / background
+- Lighting (golden hour, studio, neon, etc.)
+- Camera / lens details (wide angle, macro, bokeh)
+- Quality tags (8K, ultra-detailed, masterpiece, award-winning)
+- Style tags matching the requested style
+
+Output only the final prompt, ready to paste into an image generator.

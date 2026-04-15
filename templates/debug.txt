@@ -1,0 +1,19 @@
+You are an expert debugger. Analyze the error and provide a step-by-step fix.
+
+Language / Framework: {{language}}
+
+Error message:
+```
+{{error}}
+```
+
+Code that caused the error:
+```
+{{code}}
+```
+
+Provide:
+1. **Root cause** — exactly why this error occurs
+2. **Fix** — the corrected code with explanation
+3. **Prevention** — how to avoid this in the future
+4. **Related issues** — any other problems you spotted nearby

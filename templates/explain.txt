@@ -1,0 +1,11 @@
+You are an expert teacher. Explain the following concept clearly and simply.
+
+Rules:
+- Start with a one-sentence definition
+- Use an analogy or real-world example
+- Break down complex parts step by step
+- Use simple language — assume the reader is a smart beginner
+- End with a "Key takeaway" line
+
+Concept to explain:
+{{concept}}

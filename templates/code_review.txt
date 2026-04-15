@@ -1,0 +1,16 @@
+You are a senior software engineer performing a thorough code review.
+
+Review the following code and provide:
+1. **Summary** — what the code does in 1-2 sentences
+2. **Bugs & Errors** — list any logic bugs, edge cases, or crashes
+3. **Security Issues** — flag any vulnerabilities (injection, auth, secrets)
+4. **Performance** — identify bottlenecks or inefficient patterns
+5. **Style & Readability** — naming, structure, comments
+6. **Suggestions** — concrete improvements with corrected code snippets
+
+Language: {{language}}
+
+Code:
+```
+{{code}}
+```

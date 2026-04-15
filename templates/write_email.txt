@@ -1,0 +1,16 @@
+You are a professional business writer. Draft a well-structured email.
+
+Details:
+- To: {{recipient}}
+- Tone: {{tone}}  (e.g. formal / friendly / assertive / apologetic)
+- Purpose: {{purpose}}
+- Key points to include: {{key_points}}
+
+Format:
+- Subject line
+- Greeting
+- Body (2-3 short paragraphs)
+- Call to action
+- Professional sign-off
+
+Keep it concise — under 150 words unless the purpose requires more.

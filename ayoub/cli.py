@@ -244,7 +244,7 @@ _USAGE_ROWS = [
     ("-m / --main",             "Full ReAct agent  (default)",        '"Find the latest AI news"'),
     ("-a / --ask",              "Stateless Q&A  (no memory)",         '"What is quantum computing?"'),
     ("-aH",                     "Ask with human-in-the-loop feedback", '"Explain recursion"'),
-    ("-c / --chat",             "Chat with persistent memory",        '"Let's continue our talk"'),
+    ("-c / --chat",             "Chat with persistent memory",        '"Lets continue our talk"'),
     ("-s / --search",           "Quick web search + summarise",       '"best Python ML libraries"'),
     ("-fs / --fullsearch",      "Full scrape search (multiple links)", '"deep learning papers 2024"'),
     ("-G / --generate",         "Generate an image from a prompt",    '"a futuristic city at sunset"'),
@@ -379,11 +379,152 @@ def _build_parser():
     return parser
 
 
+# ── Classic CLI Loop ─────────────────────────────────────────────────────────
+
+def _classic_cli_loop() -> None:
+    """Keep a persistent classic-flag session open until the user types 'exit'."""
+    import shlex
+    _print_banner()
+    parser = _build_parser()
+
+    print(BLUE + BOLD + "  ┌──────────────────────────────────────────────┐" + RESET)
+    print(BLUE + BOLD + "  │   Classic CLI Mode  —  type 'exit' to quit   │" + RESET)
+    print(BLUE + BOLD + "  └──────────────────────────────────────────────┘" + RESET)
+    print(DIM + "  Example: -m \"What is AI?\"   or   -s \"latest tech news\"" + RESET)
+    print()
+
+    while True:
+        try:
+            raw = _ask_question("  ayoub> ")
+        except (EOFError, KeyboardInterrupt):
+            break
+
+        raw = raw.strip()
+        if not raw:
+            continue
+        if raw.lower() in ("exit", "quit", "q"):
+            break
+        if raw.lower() in ("help", "?", "-h", "--help"):
+            parser.print_help()
+            continue
+        if raw.lower() in ("examples", "usage"):
+            _show_usage()
+            continue
+
+        try:
+            tokens = shlex.split(raw)
+        except ValueError as exc:
+            print(Fore.RED + f"  Parse error: {exc}" + RESET)
+            continue
+
+        try:
+            args = parser.parse_args(tokens)
+        except SystemExit:
+            # argparse already printed its error
+            continue
+
+        try:
+            if args.ask:
+                _dispatch("ask", args.ask)
+            elif args.ask_feedback:
+                _dispatch("ask_feedback", args.ask_feedback)
+            elif args.chat:
+                _dispatch("chat", args.chat)
+            elif args.search:
+                _dispatch("search", args.search)
+            elif args.fullsearch:
+                _dispatch("fullsearch", args.fullsearch)
+            elif args.generate:
+                _dispatch("generate", args.generate)
+            elif args.screen:
+                _dispatch("screen", args.screen)
+            elif args.template:
+                _dispatch("template", args.template)
+            elif args.tl:
+                _dispatch("tl")
+            elif args.memshow:
+                from ayoub.modules.memory_agent import run_memshow
+                run_memshow(args.memshow)
+            elif args.memclr:
+                from ayoub.modules.memory_agent import run_memclr
+                run_memclr(args.memclr)
+            elif args.memlst:
+                _dispatch("memlst")
+            elif args.searchshow:
+                _dispatch("searchshow")
+            elif args.searchclr:
+                from ayoub.config import SEARCH_HISTORY
+                if SEARCH_HISTORY.exists():
+                    SEARCH_HISTORY.write_text("", encoding="utf-8")
+                    _answer("  Search history cleared.")
+                else:
+                    _answer("  No search history found.")
+            elif args.viewlogs:
+                _dispatch("viewlogs")
+            elif args.clrlogs:
+                from ayoub.config import LOG_FILE
+                if LOG_FILE.exists():
+                    LOG_FILE.write_text("", encoding="utf-8")
+                    _answer("  Log file cleared.")
+            elif args.switch:
+                _dispatch("switch")
+            elif args.listmodels:
+                _dispatch("listmodels")
+            elif args.collaborate:
+                _dispatch("collaborate", args.collaborate)
+            elif args.main or args.query:
+                _dispatch("main", args.main or args.query)
+            else:
+                parser.print_help()
+        except KeyboardInterrupt:
+            print(ORANGE + "\n  (interrupted)\n" + RESET)
+
+        print()
+
+    print(ORANGE + BOLD + "\n  Goodbye! Ayoub signing off. 👋\n" + RESET)
+
+
+# ── Mode Selection Splash ─────────────────────────────────────────────────────
+
+def _choose_mode() -> str:
+    """
+    Show the banner then let the user pick between:
+      1  Enhanced Interactive Menu
+      2  Classic CLI (flag-based, persistent)
+    Returns 'enhanced' or 'classic'.
+    """
+    _print_banner()
+    print(BLUE + BOLD + "  ┌───────────────────────────────────────────┐" + RESET)
+    print(BLUE + BOLD + "  │           CHOOSE YOUR CLI MODE            │" + RESET)
+    print(BLUE + BOLD + "  └───────────────────────────────────────────┘" + RESET)
+    print()
+    print(ORANGE + BOLD + "  [1]" + RESET + GREEN + "  Enhanced Interactive Menu" + RESET)
+    print(DIM   + "       Guided numbered menu — best for exploration" + RESET)
+    print()
+    print(ORANGE + BOLD + "  [2]" + RESET + GREEN + "  Classic CLI  (flag-based)" + RESET)
+    print(DIM   + "       Type flags directly, e.g.  -m \"What is AI?\"" + RESET)
+    print()
+
+    while True:
+        choice = _ask_question("  ▶  Enter 1 or 2: ").strip()
+        if choice == "1":
+            return "enhanced"
+        if choice == "2":
+            return "classic"
+        if not choice:
+            return "enhanced"   # default on Enter
+        print(Fore.RED + "  Please enter 1 or 2." + RESET)
+
+
 def main() -> None:
-    # ── If no CLI flags given → drop into interactive menu ───────────────────
+    # ── If no CLI flags given → show mode selector ────────────────────────────
     if len(sys.argv) == 1:
         try:
-            _interactive_loop()
+            mode = _choose_mode()
+            if mode == "classic":
+                _classic_cli_loop()
+            else:
+                _interactive_loop()
         except KeyboardInterrupt:
             print(ORANGE + BOLD + "\n  Goodbye! Ayoub signing off. 👋\n" + RESET)
         return
