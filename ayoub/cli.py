@@ -70,7 +70,8 @@ MENU = {
     "14": ("Switch Model/Provider",   "switch"),
     "15": ("List Available Models",   "listmodels"),
     "16": ("Model Collaboration",     "collaborate"),
-    "17": ("Exit",                    "exit"),
+    "17": ("Usage Examples",          "usage"),
+    "18": ("Exit",                    "exit"),
 }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -90,7 +91,12 @@ def _print_menu() -> None:
     print()
     for key, (label, _) in MENU.items():
         num  = (ORANGE + BOLD + f"  [{key:>2}]" + RESET)
-        name = (GREEN + f"  {label}" + RESET) if label != "Exit" else (Fore.RED + f"  {label}" + RESET)
+        if label == "Exit":
+            name = Fore.RED + f"  {label}" + RESET
+        elif label == "Usage Examples":
+            name = Fore.MAGENTA + BOLD + f"  {label}" + RESET
+        else:
+            name = GREEN + f"  {label}" + RESET
         print(f"{num}{name}")
     print()
 
@@ -220,12 +226,67 @@ def _dispatch(action: str, question: str = "") -> None:
             from ayoub.modules.ollama_collab import run_collaborate
             run_collaborate(question)
 
+    elif action == "usage":
+        _show_usage()
+
     elif action == "exit":
         print(ORANGE + BOLD + "\n  Goodbye! Ayoub signing off. 👋\n" + RESET)
         sys.exit(0)
 
     else:
         print(Fore.RED + f"  Unknown action: {action}" + RESET)
+
+
+# ── Usage Examples ───────────────────────────────────────────────────────────
+
+_USAGE_ROWS = [
+    # (flag,                    description,                          example_value)
+    ("-m / --main",             "Full ReAct agent  (default)",        '"Find the latest AI news"'),
+    ("-a / --ask",              "Stateless Q&A  (no memory)",         '"What is quantum computing?"'),
+    ("-aH",                     "Ask with human-in-the-loop feedback", '"Explain recursion"'),
+    ("-c / --chat",             "Chat with persistent memory",        '"Let's continue our talk"'),
+    ("-s / --search",           "Quick web search + summarise",       '"best Python ML libraries"'),
+    ("-fs / --fullsearch",      "Full scrape search (multiple links)", '"deep learning papers 2024"'),
+    ("-G / --generate",         "Generate an image from a prompt",    '"a futuristic city at sunset"'),
+    ("-w / --screen",           "Analyse current screen (vision)",    '"What is on my screen?"'),
+    ("-t NAME",                 "Show a named prompt template",       'my_template'),
+    ("-tl",                     "List all prompt templates",          ''),
+    ("-memshow NAME",           "View contents of a memory file",     'chat_memory'),
+    ("-memclr NAME",            "Delete a memory file",               'chat_memory'),
+    ("-memlst",                 "List all memory files",              ''),
+    ("-searchshow",             "Print search history",               ''),
+    ("-searchclr",              "Clear search history",               ''),
+    ("-viewlogs",               "Print the log file",                 ''),
+    ("-clrlogs",                "Clear the log file",                 ''),
+    ("-sw / --switch",          "Interactive model / provider switcher", ''),
+    ("-lm / --listmodels",      "List all available models + RPM",    ''),
+    ("-co / --collaborate",     "4 Ollama models collaborate",        '"Explain black holes"'),
+    ("(no flags)",              "Launch interactive menu (this UI)",  ''),
+]
+
+
+def _show_usage() -> None:
+    """Print a formatted cheatsheet of all Ayoub CLI commands."""
+    W_FLAG = 26
+    W_DESC = 42
+
+    sep   = BLUE  + BOLD + "  " + "─" * (W_FLAG + W_DESC + 32) + RESET
+    print()
+    print(BLUE + BOLD + "  ╔══════════════════════════════════════════════════════════════════════╗" + RESET)
+    print(BLUE + BOLD + "  ║               AYOUB — COMPLETE USAGE CHEATSHEET                    ║" + RESET)
+    print(BLUE + BOLD + "  ╚══════════════════════════════════════════════════════════════════════╝" + RESET)
+    print()
+    print(ORANGE + BOLD + f"  {'FLAG':<{W_FLAG}}  {'DESCRIPTION':<{W_DESC}}  EXAMPLE" + RESET)
+    print(sep)
+    for flag, desc, example in _USAGE_ROWS:
+        flag_col    = GREEN  + f"  ayoub {flag:<{W_FLAG - 7}}" + RESET
+        desc_col    = BLUE   + f"  {desc:<{W_DESC}}" + RESET
+        example_col = (ORANGE + f"  {example}" + RESET) if example else ""
+        print(f"{flag_col}{desc_col}{example_col}")
+    print(sep)
+    print()
+    print(DIM + "  Tip: run `ayoub` with no arguments to open this interactive menu." + RESET)
+    print()
 
 
 # ── Interactive Session Loop ──────────────────────────────────────────────────
