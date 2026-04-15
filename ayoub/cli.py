@@ -51,16 +51,6 @@ $$ |  $$ |    $$ |     $$$$$$  |\$$$$$$  |$$$$$$$  |
 
 SUBTITLE = "  ✦  Your JARVIS-style AI assistant  —  v2.0.0  ✦"
 
-# ── Goodbye Banner ───────────────────────────────────────────────────────────
-GOODBYE_BANNER = r"""
-░▒▓███████▓▒░▒▓████████▓▒░▒▓████████▓▒░      ░▒▓█▓▒░░▒▓█▓▒░░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░ 
-░▒▓█▓▒░      ░▒▓█▓▒░      ░▒▓█▓▒░             ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
-░▒▓█▓▒░      ░▒▓█▓▒░      ░▒▓█▓▒░             ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
- ░▒▓██████▓▒░░▒▓██████▓▒░ ░▒▓██████▓▒░         ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
-       ░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░                ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
-       ░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░                ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░              
-░▒▓███████▓▒░░▒▓████████▓▒░▒▓████████▓▒░         ░▒▓█▓▒░    ░▒▓██████▓▒░ ░▒▓██████▓▒░       ░▒▓█▓▒░ 
-"""
 
 # ── Interactive Menu Definition ───────────────────────────────────────────────
 MENU = {
@@ -231,7 +221,7 @@ def _dispatch(action: str, question: str = "") -> None:
             run_collaborate(question)
 
     elif action == "exit":
-        print(ORANGE + BOLD + GOODBYE_BANNER + RESET)
+        print(ORANGE + BOLD + "\n  Goodbye! Ayoub signing off. 👋\n" + RESET)
         sys.exit(0)
 
     else:
@@ -334,7 +324,7 @@ def main() -> None:
         try:
             _interactive_loop()
         except KeyboardInterrupt:
-            print(ORANGE + BOLD + GOODBYE_BANNER + RESET)
+            print(ORANGE + BOLD + "\n  Goodbye! Ayoub signing off. 👋\n" + RESET)
         return
 
     # ── Classic one-shot flag mode ────────────────────────────────────────────
