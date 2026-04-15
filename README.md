@@ -1,22 +1,42 @@
-# Ayoub-AI-assistant
 
-> **JARVIS-style AI assistant** — voice, ReAct agent, persistent memory, multi-model Ollama collaboration, and interactive model switching.
+<div align="center">
+
+```
+$$$$$$\  $$\     $$\  $$$$$$\  $$\   $$\ $$$$$$$\
+$$  __$$\ \$$\   $$  |$$  __$$\ $$ |  $$ |$$  __$$\
+$$ /  $$ | \$$\ $$  / $$ /  $$ |$$ |  $$ |$$ |  $$ |
+$$$$$$$$ |  \$$$$  /  $$ |  $$ |$$ |  $$ |$$$$$$$\ |
+$$  __$$ |   \$$  /   $$ |  $$ |$$ |  $$ |$$  __$$\
+$$ |  $$ |    $$ |    $$ |  $$ |$$ |  $$ |$$ |  $$ |
+$$ |  $$ |    $$ |     $$$$$$  |\$$$$$$  |$$$$$$$  |
+\__|  \__|    \__|     \______/  \______/ \_______/
+```
+
+**Your JARVIS-style AI assistant — v2.0.0**
 
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
 [![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)](#)
+[![License](https://img.shields.io/badge/license-MIT-green)](#)
 [![GitHub](https://img.shields.io/badge/GitHub-Ayoub--AI--assistant-black)](https://github.com/salehhamdy/Ayoub-AI-assistant)
+
+</div>
 
 ---
 
 ## What is Ayoub?
 
-Ayoub merges the best of two worlds:
+Ayoub is a powerful, terminal-native AI assistant that combines a **ReAct reasoning agent**, **multi-provider LLM support**, **persistent memory**, **web search**, **image generation**, **screen analysis**, and **Ollama multi-model collaboration** — all from a single command.
 
-| Source | Contribution |
+| Capability | Details |
 |---|---|
-| `friday-tony-stark-demo` | Voice pipeline (LiveKit), FastMCP tool server, async news/web/system tools |
-| `hereiz-AI-terminal-assistant` | ReAct reasoning loop, persistent memory, CLI, screen analysis, PDF reader, Python executor, image generation |
-| **New** | Unified LLM layer (Gemini, Groq, DeepSeek, Ollama), model switcher, 4-model Ollama collaboration |
+| 🤖 **ReAct Agent** | Multi-step tool-calling loop with real web search and Python exec |
+| 🧠 **Memory** | Persistent conversation memory across sessions |
+| 🔍 **Search** | Real DuckDuckGo results via `ddgs` API, full-page scraping |
+| 🖼️ **Image Gen** | Pollinations.ai (free, no key) with auto FLUX model selection |
+| 👁️ **Vision** | 6-mode screen analysis with Gemini → Groq cascade |
+| 🤝 **Collaboration** | 4 Ollama models answer in parallel, DeepSeek synthesises |
+| 🔧 **Templates** | 10 built-in prompt templates for common tasks |
+| 🎨 **Interactive UI** | Coloured menu CLI with mode selector (Enhanced / Classic) |
 
 ---
 
@@ -33,129 +53,206 @@ pip install -r requirements.txt
 
 # 3. Configure
 cp .env.example .env
-# Edit .env — add your API keys (Gemini key is enough to start)
+# Edit .env — add your API keys (a Groq or Gemini key is enough to start)
 
-# 4. Run
-ayoub -a "Hello, Ayoub!"
+# 4. Launch interactive mode
+ayoub
 ```
 
 ---
 
-## CLI Usage — All 21 Commands
+## Interactive Mode (Recommended)
+
+Run `ayoub` with no arguments to enter the guided interface.
+
+**Step 1 — Choose your mode:**
+```
+  ┌───────────────────────────────────────────┐
+  │           CHOOSE YOUR CLI MODE            │
+  └───────────────────────────────────────────┘
+
+  [1]  Enhanced Interactive Menu
+       Guided numbered menu — best for exploration
+
+  [2]  Classic CLI  (flag-based)
+       Type flags directly, e.g.  -m "What is AI?"
+```
+
+**Step 2 — Enhanced mode shows the full service menu:**
+```
+  [ 1]  Main Agent (ReAct)
+  [ 2]  Stateless Q&A
+  [ 3]  Human Feedback Mode
+  [ 4]  Chat with Memory
+  [ 5]  Quick Web Search
+  [ 6]  Full Scrape Search
+  [ 7]  Generate Images
+  [ 8]  Analyze Screen
+  [ 9]  Show Prompt Template
+  [10]  List Templates
+  [11]  Memory Management
+  [12]  Search History
+  [13]  System Logs
+  [14]  Switch Model/Provider
+  [15]  List Available Models
+  [16]  Model Collaboration
+  [17]  Usage Examples
+  [18]  Exit
+```
+
+You can enter a **number**, a **label keyword** (e.g. `search`), or a **shortcut** (`exit`, `quit`, `help`, `usage`).
+
+**Classic mode** keeps a persistent REPL prompt open:
+```
+  ayoub> -m "What is quantum computing?"
+  ayoub> -s "latest AI news"
+  ayoub> examples       ← shows full cheatsheet
+  ayoub> exit
+```
+
+---
+
+## All CLI Commands
 
 ```bash
-# ── Ask ──────────────────────────────────────────────────────
-ayoub -a "What is quantum computing?"      # Stateless Q&A
-ayoub -aH "Explain recursion to me"        # Ask with follow-up feedback
-ayoub -c "Let's continue our discussion"   # Chat with persistent memory
+# ── Ask & Chat ───────────────────────────────────────────────
+ayoub -a "What is quantum computing?"       # Stateless Q&A (no memory)
+ayoub -aH "Explain recursion"               # Ask with human follow-up feedback
+ayoub -c "Let's continue our discussion"    # Chat with persistent memory
 
-# ── Agent ────────────────────────────────────────────────────
-ayoub -m "Find the latest AI news"         # Full ReAct agent (all tools)
-ayoub "What is 22 * 33?"                   # -m is the default
+# ── ReAct Agent (default) ────────────────────────────────────
+ayoub -m "Find the latest AI news"          # Full ReAct agent with all tools
+ayoub "What is 22 * 33?"                    # -m is the default
 
 # ── Search ───────────────────────────────────────────────────
-ayoub -s "best Python libraries for ML"    # Web search
-ayoub -fs "deep learning papers 2024"      # Full search (scrapes many links)
+ayoub -s "best Python libraries for ML"     # Quick web search + summarise
+ayoub -fs "deep learning papers 2024"       # Full search (scrapes multiple links)
 
-# ── Create / Vision ──────────────────────────────────────────
-ayoub -G "a futuristic city at sunset"     # Generate images
-ayoub -w "What's on my screen?"            # Screen analysis (vision)
-
-# ── Ollama Multi-Model Collaboration ─────────────────────────
-ayoub -co "Explain black holes"            # All 4 local models collaborate
+# ── Vision & Generation ──────────────────────────────────────
+ayoub -G "a futuristic city at sunset"      # Generate images (Pollinations.ai)
+ayoub -w "What's on my screen?"             # Screen analysis (6 auto-detected modes)
 
 # ── Model Management ─────────────────────────────────────────
-ayoub -sw                                  # Interactive model switcher menu
-ayoub -lm                                  # List all available models
+ayoub -sw                                   # Interactive model/provider switcher
+ayoub -lm                                   # List all available models + RPM
+ayoub -co "Explain black holes"             # 4 Ollama models collaborate
 
-# ── Templates ────────────────────────────────────────────────
-ayoub -t my_template                       # Show a template
-ayoub -tl                                  # List all templates
+# ── Prompt Templates ─────────────────────────────────────────
+ayoub -t summarize                          # Show a template
+ayoub -tl                                   # List all templates
 
 # ── Memory ───────────────────────────────────────────────────
-ayoub -memshow chat_memory                 # View memory file
-ayoub -memclr chat_memory                  # Clear memory file
-ayoub -memlst                              # List all memory files
+ayoub -memshow chat_memory                  # View a memory file
+ayoub -memclr chat_memory                   # Clear a memory file
+ayoub -memlst                               # List all memory files
 
 # ── History & Logs ───────────────────────────────────────────
-ayoub -searchshow                          # View search history
-ayoub -searchclr                           # Clear search history
-ayoub -viewlogs                            # View log file
-ayoub -clrlogs                             # Clear log file
+ayoub -searchshow                           # View search history
+ayoub -searchclr                            # Clear search history
+ayoub -viewlogs                             # View log file
+ayoub -clrlogs                              # Clear log file
 ```
 
 ---
 
-## LLM Provider Switching
+## Prompt Templates
 
-### Option A — Interactive Menu (Recommended)
-```bash
-ayoub -sw
-```
-Shows a numbered list of every provider and model. Pick a number → `.env` is updated instantly.
+10 built-in templates are ready to use. View with `ayoub -t <name>` or via menu option 9.
 
-### Option B — List All Models
-```bash
-ayoub -lm
-```
-Shows all models grouped by provider, including your installed Ollama models.
+| Template | Use Case |
+|---|---|
+| `summarize` | Concise bullet-point summary of any content |
+| `code_review` | Full code review — bugs, security, performance |
+| `explain` | Concept explanation with analogies for beginners |
+| `research` | Multi-source research with citations |
+| `translate` | Cultural-aware translation between languages |
+| `write_email` | Professional email drafting |
+| `debug` | Root cause analysis + fix for code errors |
+| `brainstorm` | Idea generation with feasibility ratings |
+| `plan` | Project planning with phases, risks, milestones |
+| `image_prompt` | Optimised prompts for AI image generators |
 
-### Option C — Manual `.env` edit
+---
 
-| `LLM_PROVIDER` | `LLM_MODEL` examples | API Key | Notes |
+## Multi-Provider LLM Support
+
+Ayoub works with **5 providers** out of the box:
+
+| Provider | Key | Default Model | Notes |
 |---|---|---|---|
-| `gemini` | `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-2.0-flash` | `GOOGLE_API_KEY` | Default, free tier |
-| `groq` | `llama-3.3-70b-versatile`, `mixtral-8x7b-32768` | `GROQ_API_KEY` | Ultra-fast, free |
-| `deepseek` | `deepseek-chat`, `deepseek-reasoner` | `DEEPSEEK_API_KEY` | Best reasoning |
-| `ollama` | `llama3.1`, `mistral`, `phi3`, `deepseek-r1:7b` | *(none)* | Fully local, free |
+| **Groq** | `GROQ_API_KEY` | `llama-3.3-70b-versatile` | Ultra-fast, free tier |
+| **Google Gemini** | `GOOGLE_API_KEY` | `gemini-3-flash-preview` | Vision + embeddings |
+| **DeepSeek** | `DEEPSEEK_API_KEY` | `deepseek-chat` | Best reasoning |
+| **OpenAI** | `OPENAI_API_KEY` | `gpt-4o` | GPT-4 family |
+| **Ollama** | *(none)* | any local model | Fully offline |
+
+Switch instantly with `ayoub -sw` — choice is persisted to `.env`.
+
+---
+
+## Image Generation
+
+Powered by **Pollinations.ai** — free, no API key, always online.
+
+Auto-detects the best FLUX model from your prompt:
+
+| Keyword detected | Model | Style |
+|---|---|---|
+| photo, realistic, portrait | `flux-realism` | Photographic |
+| anime, manga, cartoon | `flux-anime` | Anime |
+| 3d, render, blender | `flux-3d` | 3D CGI |
+| painting, watercolor | `flux-cablyai` | Artistic |
+| (default) | `flux` | High quality |
+
+---
+
+## Screen Analysis
+
+`ayoub -w "..."` takes a screenshot and runs vision AI with **6 auto-detected modes**:
+
+| Question contains | Mode | What Ayoub does |
+|---|---|---|
+| code, script, function | `CODE` | Reviews code, finds bugs |
+| error, crash, exception | `ERROR` | Root cause + step-by-step fix |
+| summarise, summary | `SUMMARISE` | Structured key points |
+| translate, arabic, french | `TRANSLATE` | Full translation |
+| read, extract, text | `OCR` | Extracts all visible text |
+| *(anything else)* | `DESCRIBE` | Full visual description |
+
+Vision cascade: **Gemini 2.0 Flash → Groq Llama 4 Scout → Groq Llama 4 Maverick**
 
 ---
 
 ## Ollama Multi-Model Collaboration
 
-When you have multiple local models, Ayoub can run them **all in parallel** and synthesise the best answer:
-
 ```bash
 ayoub -co "Explain the theory of relativity"
 ```
 
-**How it works:**
-1. All 4 models answer simultaneously in parallel (colour-coded output)
-2. `deepseek-r1:7b` (the reasoner) reads all responses and writes a final unified answer
-
-Your 4 models and their roles:
+All 4 local models answer **simultaneously in parallel**, then DeepSeek synthesises the best answer:
 
 | Model | Role |
 |---|---|
 | `llama3.1` | General Analyst |
 | `mistral` | Concise Analyst |
-| `deepseek-r1:7b` | Deep Reasoner + Synthesiser |
+| `deepseek-r1:7b` | Deep Reasoner + **Synthesiser** |
 | `phi3` | Second Opinion |
 
 ---
 
-## Voice Agent (JARVIS)
+## Configuration (`.env`)
 
-```bash
-ayoub-server        # Terminal 1 — MCP tool server
-ayoub-voice dev     # Terminal 2 — voice agent
+```env
+LLM_PROVIDER=groq
+LLM_MODEL=llama-3.3-70b-versatile
+LLM_TEMPERATURE=0.7
+API_CALL_DELAY=0
+
+GOOGLE_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here
+DEEPSEEK_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
 ```
-
-Connect at [agents-playground.livekit.io](https://agents-playground.livekit.io)
-
-> *"Good to see you, sir. What shall we tackle today?"*
-
-**Voice stack:** Groq Whisper (STT) → Groq llama-3.3-70b (LLM) → Cartesia Sonic British male (TTS)
-
----
-
-## MCP Tool Server
-
-```bash
-ayoub-server   # Starts FastMCP server on :8000
-```
-
-Tools: `get_world_news`, `search_web`, `fetch_url`, `open_world_monitor`, `get_time`, `system_info`, `format_json`, `word_count`
 
 ---
 
@@ -164,33 +261,33 @@ Tools: `get_world_news`, `search_web`, `fetch_url`, `open_world_monitor`, `get_t
 ```
 Ayoub-AI-assistant/
 ├── ayoub/
-│   ├── config.py            ← All settings (pathlib.Path)
-│   ├── cli.py               ← Cross-platform CLI (21 commands)
-│   ├── llm/                 ← Gemini, OpenAI, Groq, DeepSeek, Ollama
-│   ├── agent/               ← ReAct engine
-│   ├── memory/              ← Persistent memory
-│   ├── tools/               ← All 8 agent tools
-│   ├── modules/
-│   │   ├── ask_agent.py     ← -a / -aH
-│   │   ├── chat_agent.py    ← -c
-│   │   ├── main_agent.py    ← -m
-│   │   ├── search_agent.py  ← -s / -fs
-│   │   ├── generate_agent.py← -G
-│   │   ├── screen_agent.py  ← -w
-│   │   ├── memory_agent.py  ← -mem*
-│   │   ├── model_switcher.py← -sw / -lm
-│   │   └── ollama_collab.py ← -co
-│   ├── mcp_server/          ← FastMCP SSE server
-│   └── voice/               ← LiveKit JARVIS agent
-├── helpers/
+│   ├── cli.py               ← Interactive CLI (Enhanced + Classic modes)
+│   ├── config.py            ← Central config (pathlib.Path)
+│   ├── agent/               ← ReAct engine, human-loop, base LLM
+│   ├── llm/                 ← Gemini, Groq, Ollama, DeepSeek providers
+│   ├── modules/             ← ask, chat, search, generate, screen, memory...
+│   ├── tools/               ← search_tool, image_gen, scrape, python_exec
+│   ├── memory/              ← Persistent file-based memory
+│   ├── mcp_server/          ← FastMCP SSE tool server
+│   └── voice/               ← LiveKit JARVIS agent (scaffolded)
+├── templates/               ← 10 prompt templates
+│   ├── summarize.txt
+│   ├── code_review.txt
+│   ├── explain.txt
+│   ├── research.txt
+│   ├── translate.txt
+│   ├── write_email.txt
+│   ├── debug.txt
+│   ├── brainstorm.txt
+│   ├── plan.txt
+│   └── image_prompt.txt
 ├── data/memory/             ← Conversation memories
-├── logs/ayoub.log           ← Rotating log
+├── logs/ayoub.log           ← Rotating log file
 ├── output/imgs/             ← Generated images
-├── templates/               ← Prompt templates
-├── ollama_models.txt        ← Ollama download guide
-├── USER_GUIDE.md            ← Full instruction manual
 ├── requirements.txt
-└── .env.example
+├── .env.example
+├── USER_GUIDE.md
+└── progress.md              ← Full development history
 ```
 
 ---
@@ -201,5 +298,13 @@ Ayoub-AI-assistant/
 |---|---|---|
 | CLI | `ayoub.exe` (pip-generated) | `ayoub` script |
 | Screen capture | `PIL.ImageGrab` | `scrot` or `PIL.ImageGrab` |
-| Model switcher | writes to `.env` directly | writes to `.env` directly |
-| Sketch canvas | built-in tkinter | needs `python3-tk` |
+| Colours | `colorama` auto-initialised | native ANSI |
+| Model switcher | writes `.env` directly | writes `.env` directly |
+
+---
+
+<div align="center">
+
+Made with ❤️ by [salehhamdy](https://github.com/salehhamdy)
+
+</div>

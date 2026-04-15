@@ -297,17 +297,37 @@ def _interactive_loop() -> None:
 
     while True:
         _print_menu()
-        choice = _ask_question("  ▶  Enter service number: ")
+        choice = _ask_question("  ▶  Enter service number (or 'exit' / 'help'): ").strip().lower()
 
-        if not choice:          # Ctrl+C or empty — re-show menu
+        if not choice:          # empty — re-show menu
             print()
             continue
 
-        if choice not in MENU:
-            print(Fore.RED + f"\n  ✗  Invalid choice '{choice}'. Please pick 1–17.\n" + RESET)
+        # ── Keyword shortcuts (case-insensitive) ─────────────────────────────
+        if choice in ("exit", "quit", "q", "bye"):
+            _dispatch("exit")   # prints goodbye + sys.exit
+        if choice in ("help", "?", "usage", "examples"):
+            _show_usage()
+            _ask_question("  Press Enter to return to menu...")
+            print()
             continue
 
-        label, action = MENU[choice]
+        # ── Find by number or by label substring ─────────────────────────────
+        matched_key = None
+        if choice in MENU:
+            matched_key = choice
+        else:
+            # Allow typing a label keyword like "search" or "generate"
+            for key, (label, action) in MENU.items():
+                if choice in label.lower() or choice == action.lower():
+                    matched_key = key
+                    break
+
+        if matched_key is None:
+            print(Fore.RED + f"\n  ✗  Unknown choice '{choice}'. Enter a number 1–18, 'exit', or 'help'.\n" + RESET)
+            continue
+
+        label, action = MENU[matched_key]
         print()
         _system_prompt(f"  ── {label} ──────────────────────────────────")
         print()
