@@ -51,6 +51,17 @@ $$ |  $$ |    $$ |     $$$$$$  |\$$$$$$  |$$$$$$$  |
 
 SUBTITLE = "  ✦  Your JARVIS-style AI assistant  —  v2.0.0  ✦"
 
+# ── Goodbye Banner ───────────────────────────────────────────────────────────
+GOODBYE_BANNER = r"""
+░▒▓███████▓▒░▒▓████████▓▒░▒▓████████▓▒░      ░▒▓█▓▒░░▒▓█▓▒░░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░       ░▒▓█▓▒░ 
+░▒▓█▓▒░      ░▒▓█▓▒░      ░▒▓█▓▒░             ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
+░▒▓█▓▒░      ░▒▓█▓▒░      ░▒▓█▓▒░             ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
+ ░▒▓██████▓▒░░▒▓██████▓▒░ ░▒▓██████▓▒░         ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
+       ░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░                ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░ 
+       ░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░                ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░              
+░▒▓███████▓▒░░▒▓████████▓▒░▒▓████████▓▒░         ░▒▓█▓▒░    ░▒▓██████▓▒░ ░▒▓██████▓▒░       ░▒▓█▓▒░ 
+"""
+
 # ── Interactive Menu Definition ───────────────────────────────────────────────
 MENU = {
     "1":  ("Main Agent (ReAct)",      "main"),
@@ -220,7 +231,7 @@ def _dispatch(action: str, question: str = "") -> None:
             run_collaborate(question)
 
     elif action == "exit":
-        print(ORANGE + BOLD + "\n  Goodbye! Ayoub signing off. 👋\n" + RESET)
+        print(ORANGE + BOLD + GOODBYE_BANNER + RESET)
         sys.exit(0)
 
     else:
@@ -253,7 +264,7 @@ def _interactive_loop() -> None:
         try:
             _dispatch(action)
         except KeyboardInterrupt:
-            print(ORANGE + "\n  (interrupted — returning to menu)\n" + RESET)
+            print(ORANGE + BOLD + "\n  (interrupted — returning to menu)\n" + RESET)
             continue
 
         print()
@@ -323,7 +334,7 @@ def main() -> None:
         try:
             _interactive_loop()
         except KeyboardInterrupt:
-            print(ORANGE + BOLD + "\n\n  Goodbye! Ayoub signing off. 👋\n" + RESET)
+            print(ORANGE + BOLD + GOODBYE_BANNER + RESET)
         return
 
     # ── Classic one-shot flag mode ────────────────────────────────────────────
