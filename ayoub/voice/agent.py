@@ -215,7 +215,7 @@ def main() -> None:
     cli.run_app(WorkerOptions(
         entrypoint_fnc=entrypoint,
         prewarm_fnc=prewarm,
-        # agent_name left empty → implicit dispatch (playground dispatches automatically)
+        agent_name="ayoub",   # explicit dispatch: dispatch_agent.py targets this name
     ))
 
 
