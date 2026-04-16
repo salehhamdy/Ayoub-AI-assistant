@@ -31,9 +31,11 @@ import sys
 from ayoub.config import (
     LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET,
     GROQ_API_KEY, MCP_SERVER_PORT,
+    OPENAI_API_KEY,
 )
 
 CARTESIA_API_KEY = os.getenv("CARTESIA_API_KEY", "")
+VOICE_PROVIDER   = os.getenv("VOICE_PROVIDER", "groq")  # groq | openai
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODULE-LEVEL PLUGIN IMPORTS  ← DO NOT move these into any function
@@ -48,6 +50,7 @@ try:
     from livekit.agents.voice import Agent, AgentSession
     from livekit.plugins.groq import STT as GroqSTT, LLM as GroqLLM
     from livekit.plugins.cartesia import TTS as CartesiaTTS
+    from livekit.plugins.openai import STT as OpenAISTT, LLM as OpenAILLM, TTS as OpenAITTS
     from livekit.plugins import silero
     _PLUGINS_READY = True
 except ImportError as _import_err:
@@ -160,16 +163,23 @@ async def entrypoint(ctx) -> None:
 
     vad = ctx.proc.userdata.get("vad")
 
-    session = AgentSession(
-        stt=GroqSTT(api_key=GROQ_API_KEY, model="whisper-large-v3"),
-        llm=GroqLLM(api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile"),
-        tts=CartesiaTTS(
+    # ── Voice provider selection ──────────────────────────────────────────────
+    if VOICE_PROVIDER == "openai":
+        print("[ayoub-voice] Using OpenAI voice stack (STT + LLM + TTS)")
+        stt = OpenAISTT(api_key=OPENAI_API_KEY)
+        llm = OpenAILLM(api_key=OPENAI_API_KEY, model="gpt-4o-mini")
+        tts = OpenAITTS(api_key=OPENAI_API_KEY, voice="onyx")  # onyx = deep male voice
+    else:
+        print("[ayoub-voice] Using Groq+Cartesia voice stack (default)")
+        stt = GroqSTT(api_key=GROQ_API_KEY, model="whisper-large-v3")
+        llm = GroqLLM(api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile")
+        tts = CartesiaTTS(
             api_key=CARTESIA_API_KEY,
             voice="79a125e8-cd45-4c13-8a67-188112f4dd22",
             model="sonic-english",
-        ),
-        vad=vad,
-    )
+        )
+
+    session = AgentSession(stt=stt, llm=llm, tts=tts, vad=vad)
 
     class _AyoubAgent(Agent):
         def __init__(self):
@@ -201,10 +211,11 @@ def main() -> None:
         sys.exit(1)
 
     print("[ayoub-voice] Starting — plugins registered at module import...")
+    print(f"[ayoub-voice] Voice provider: {VOICE_PROVIDER}  (set VOICE_PROVIDER=openai to switch)")
     cli.run_app(WorkerOptions(
         entrypoint_fnc=entrypoint,
         prewarm_fnc=prewarm,
-        agent_name="ayoub",    # must match 'Agent name' in LiveKit playground
+        # agent_name left empty → implicit dispatch (playground dispatches automatically)
     ))
 
 
