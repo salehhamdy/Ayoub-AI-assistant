@@ -175,8 +175,8 @@ async def entrypoint(ctx) -> None:
                 allow_interruptions=True,
             )
 
-    # Pass participant so the session knows who to listen to
-    await session.start(ctx.room, agent=_AyoubAgent(), participant=participant)
+    # AgentSession.start(agent, room=..., participant=...) in livekit-agents 1.5.x
+    await session.start(_AyoubAgent(), room=ctx.room, participant=participant)
 
 
 # ── Entry points ──────────────────────────────────────────────────────────────
