@@ -192,8 +192,8 @@ async def entrypoint(ctx) -> None:
                 allow_interruptions=True,
             )
 
-    # agent is the first positional arg in livekit-agents 1.5.x
-    await session.start(_AyoubAgent(), room=ctx.room, participant=participant)
+    # agent is first positional arg; participant= not supported in livekit-agents 1.5.x
+    await session.start(_AyoubAgent(), room=ctx.room)
 
 
 # ── Entry points ──────────────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ def main() -> None:
     cli.run_app(WorkerOptions(
         entrypoint_fnc=entrypoint,
         prewarm_fnc=prewarm,
-        agent_name="ayoub",   # explicit dispatch: dispatch_agent.py targets this name
+        # agent_name="" (empty) = implicit dispatch — playground auto-dispatches to this worker
     ))
 
 
