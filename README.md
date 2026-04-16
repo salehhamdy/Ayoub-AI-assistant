@@ -16,7 +16,7 @@ $$ |  $$ |    $$ |     $$$$$$  |\$$$$$$  |$$$$$$$  |
 
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue?logo=python&logoColor=white)](https://python.org)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey?logo=windows&logoColor=white)](#)
-[![License](https://img.shields.io/badge/license-MIT-green?logo=opensourceinitiative&logoColor=white)](https://github.com/salehhamdy/Ayoub-AI-assistant/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-Non--Commercial-red?logo=cachet&logoColor=white)](https://github.com/salehhamdy/Ayoub-AI-assistant/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Ayoub--AI--assistant-black?logo=github&logoColor=white)](https://github.com/salehhamdy/Ayoub-AI-assistant)
 </div>
 
@@ -314,7 +314,7 @@ Ayoub-AI-assistant/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed for Non-Commercial and Private Use Only - see the [LICENSE](LICENSE) file for details.
 
 ---
 
