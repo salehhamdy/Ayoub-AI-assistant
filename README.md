@@ -14,11 +14,12 @@ $$ |  $$ |    $$ |     $$$$$$  |\$$$$$$  |$$$$$$$  |
 
 **Your JARVIS-style AI assistant — v2.0.0**
 
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
-[![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)](#)
-[![License](https://img.shields.io/badge/license-MIT-green)]
- (https://github.com/salehhamdy/Ayoub-AI-assistant?tab=MIT-1-ov-file)
-[![GitHub](https://img.shields.io/badge/GitHub-Ayoub--AI--assistant-black)](https://github.com/salehhamdy/Ayoub-AI-assistant)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue?logo=python&logoColor=white)](https://python.org)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey?logo=windows&logoColor=white)](#)
+[![License](https://img.shields.io/badge/license-MIT-green?logo=opensourceinitiative&logoColor=white)](https://github.com/salehhamdy/Ayoub-AI-assistant/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-Ayoub--AI--assistant-black?logo=github&logoColor=white)](https://github.com/salehhamdy/Ayoub-AI-assistant)
+[![Stars](https://img.shields.io/github/stars/salehhamdy/Ayoub-AI-assistant?style=flat&logo=github)](https://github.com/salehhamdy/Ayoub-AI-assistant/stargazers)
+[![Issues](https://img.shields.io/github/issues/salehhamdy/Ayoub-AI-assistant?logo=github)](https://github.com/salehhamdy/Ayoub-AI-assistant/issues)
 
 </div>
 
