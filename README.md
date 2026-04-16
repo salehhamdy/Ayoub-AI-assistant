@@ -16,7 +16,8 @@ $$ |  $$ |    $$ |     $$$$$$  |\$$$$$$  |$$$$$$$  |
 
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
 [![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)](#)
-[![License](https://img.shields.io/badge/license-MIT-green)](#)
+[![License](https://img.shields.io/badge/license-MIT-green)]
+ (https://github.com/salehhamdy/Ayoub-AI-assistant?tab=MIT-1-ov-file)
 [![GitHub](https://img.shields.io/badge/GitHub-Ayoub--AI--assistant-black)](https://github.com/salehhamdy/Ayoub-AI-assistant)
 
 </div>
