@@ -40,6 +40,16 @@ Ayoub is a powerful, terminal-native AI assistant that combines a **ReAct reason
 
 ---
 
+## Voice Assistant Demo
+
+The voice assistant leverages LiveKit for seamless audio interaction.
+
+![Playground Screenshot](image.png)
+
+**Demo Video:** [Watch the LiveKit Playground interaction](./LiveKit%20Agents%20Playground.mp4)
+
+---
+
 ## Quick Start
 
 ```bash
