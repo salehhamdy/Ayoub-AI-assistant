@@ -18,9 +18,6 @@ $$ |  $$ |    $$ |     $$$$$$  |\$$$$$$  |$$$$$$$  |
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey?logo=windows&logoColor=white)](#)
 [![License](https://img.shields.io/badge/license-MIT-green?logo=opensourceinitiative&logoColor=white)](https://github.com/salehhamdy/Ayoub-AI-assistant/blob/main/LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Ayoub--AI--assistant-black?logo=github&logoColor=white)](https://github.com/salehhamdy/Ayoub-AI-assistant)
-[![Stars](https://img.shields.io/github/stars/salehhamdy/Ayoub-AI-assistant?style=flat&logo=github)](https://github.com/salehhamdy/Ayoub-AI-assistant/stargazers)
-[![Issues](https://img.shields.io/github/issues/salehhamdy/Ayoub-AI-assistant?logo=github)](https://github.com/salehhamdy/Ayoub-AI-assistant/issues)
-
 </div>
 
 ---
