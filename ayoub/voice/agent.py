@@ -196,7 +196,8 @@ def main() -> None:
     print("[ayoub-voice] Starting — plugins will be registered in prewarm...")
     cli.run_app(WorkerOptions(
         entrypoint_fnc=entrypoint,
-        prewarm_fnc=prewarm,       # ← registers all plugins on main thread of each worker
+        prewarm_fnc=prewarm,
+        agent_name="ayoub",    # ← must match Agent name in LiveKit playground
     ))
 
 
