@@ -1,9 +1,9 @@
 # Ayoub AI Assistant — Project Progress Log
 
-> **Last updated:** 2026-04-14  
+> **Last updated:** 2026-04-16  
 > **Repo:** https://github.com/salehhamdy/Ayoub-AI-assistant  
 > **Current version:** v2.0.0  
-> **Default model:** `gemini-3-flash-preview`
+> **Default model:** `llama-3.3-70b-versatile` (Groq)
 
 ---
 
@@ -258,6 +258,85 @@ livekit-plugins-cartesia>=1.5.0 # TTS via Cartesia
 
 ---
 
+## Phase 12 — CLI Overhaul: Interactive Mode + Prompt Templates
+
+### What was built
+
+#### Mode Selector Splash
+- Running `ayoub` with no arguments now shows a **mode selection screen** instead of jumping straight to the menu
+- **Mode 1 — Enhanced Interactive Menu**: guided numbered menu, stays open between tasks
+- **Mode 2 — Classic CLI**: persistent REPL where you type flags directly (e.g. `-m "What is AI?"`)
+- Pressing Enter defaults to Mode 1
+
+#### Enhanced Interactive Menu (18 items)
+- Full numbered service menu with orange/green/blue colour scheme
+- Sessions remain open — never closes until user exits
+- **Case-insensitive, multi-input** support:
+  - Numbers `1`–18
+  - Label keywords: `search`, `generate`, `chat`, `screen`, etc.
+  - Action names: `main`, `ask`, `tl`, `memlst`, etc.
+  - Shortcuts: `exit`, `quit`, `q`, `bye` → clean exit
+  - Help keywords: `help`, `?`, `usage`, `examples` → full cheatsheet
+- Menu item 17 = **Usage Examples** (formatted cheatsheet with colours)
+- Menu item 18 = Exit
+
+#### Classic CLI Loop (`_classic_cli_loop`)
+- Persistent `ayoub>` REPL — never need to re-run the command
+- Accepts any flag: `-m`, `-s`, `-G`, `-co`, `-sw`, etc.
+- Inline commands: `help`, `examples`, `exit`
+- Full argparse parsing on each line via `shlex.split()`
+
+#### ASCII Banner
+- Orange `$$` AYOUB figlet banner printed on every launch
+- Colour palette: Orange (banner/prompts), Blue (questions/menu borders), Green (answers/items)
+
+#### Usage Cheatsheet (`_show_usage`)
+- Available as menu option 17 and keyword `help`/`usage` in any mode
+- Formatted table: Flag (green) | Description (blue) | Example (orange)
+- Boxed header, separator lines, 21 commands covered
+
+### Prompt Templates — 10 Built-in
+
+New `templates/` directory populated with 10 ready-to-use `.txt` files:
+
+| Template | Purpose |
+|---|---|
+| `summarize.txt` | Concise bullet-point summary |
+| `code_review.txt` | Full code review: bugs, security, perf, style |
+| `explain.txt` | Beginner-friendly concept explanation |
+| `research.txt` | Multi-source research with citations |
+| `translate.txt` | Cultural-aware translation |
+| `write_email.txt` | Professional email drafting |
+| `debug.txt` | Root cause + fix for code errors |
+| `brainstorm.txt` | Idea generation with ratings |
+| `plan.txt` | Project planning with phases/risks |
+| `image_prompt.txt` | Optimised AI image generation prompts |
+
+All use `{{placeholder}}` syntax. Accessible via `ayoub -t <name>` or menu option 9.
+
+### Documentation Updated
+
+| File | Change |
+|---|---|
+| `README.md` | Full v2.0.0 rewrite with mode selector, templates, all sections |
+| `USER_GUIDE.md` | Complete rewrite covering both CLI modes, all 10 templates |
+| `ENHANCEMENTS.md` | Full versioned changelog from v1.1 → v2.0.0 |
+| `MANUAL.md` | New file — concise quick-reference card |
+| `AYOUB_MANUAL.md` | New file — complete 17-section definitive manual |
+
+### Git Commits (this session)
+| Commit | Message |
+|---|---|
+| `3837741` | feat: interactive menu CLI with ASCII banner, colors, persistent session loop |
+| `6775213` | feat: add SEE YOU ASCII goodbye banner on exit |
+| `8df2588` | feat: remove SEE YOU goodbye banner, use simple farewell message |
+| `7ca4807` | feat: add Usage Examples menu item with full CLI cheatsheet |
+| `50e93e6` | feat: mode selector (Enhanced/Classic CLI), 10 prompt templates |
+| `5a7a3d3` | feat: case-insensitive menu input + full README v2.0.0 rewrite |
+| `f9915de` | docs: rewrite USER_GUIDE + ENHANCEMENTS, add MANUAL quick-reference |
+
+---
+
 ## Current `.env` Configuration
 
 ```env
@@ -296,6 +375,10 @@ The voice pipeline is already scaffolded in `requirements.txt`:
 ```
 Ayoub-AI-assistant/
 ├── ayoub/
+│   ├── cli.py                   # Enhanced + Classic interactive CLI (REWRITTEN)
+│   ├── config.py                # Central config + AYOUB_VERSION
+│   ├── logger.py                # Rotating logger
+│   ├── screen_capture.py        # Screenshot utility
 │   ├── agent/
 │   │   ├── base_llm.py          # LLM abstraction + vision cascade
 │   │   ├── base_runtime.py      # Base agent step loop
@@ -305,7 +388,7 @@ Ayoub-AI-assistant/
 │   │   └── toolkit.py           # Tool registry
 │   ├── llm/
 │   │   ├── gemini.py            # Gemini provider (google-genai 1.x)
-│   │   ├── gemini_embed.py      # GeminiEmbedder (NEW)
+│   │   ├── gemini_embed.py      # GeminiEmbedder (3072-dim vectors)
 │   │   ├── groq_llm.py          # Groq provider
 │   │   ├── ollama_llm.py        # Ollama provider
 │   │   └── __init__.py          # Provider factory
@@ -314,23 +397,41 @@ Ayoub-AI-assistant/
 │   │   ├── chat_agent.py        # -c
 │   │   ├── main_agent.py        # -m (default)
 │   │   ├── search_agent.py      # -s / -fs
-│   │   ├── generate_agent.py    # -G
-│   │   ├── screen_agent.py      # -w (ENHANCED)
-│   │   ├── model_switcher.py    # -sw / -lm (ENHANCED)
-│   │   └── collab_agent.py      # -co (Ollama multi-model)
+│   │   ├── generate_agent.py    # -G (Pollinations.ai)
+│   │   ├── screen_agent.py      # -w (6 modes + cascade)
+│   │   ├── memory_agent.py      # -mem*
+│   │   ├── model_switcher.py    # -sw / -lm
+│   │   └── ollama_collab.py     # -co (4-model parallel)
 │   ├── tools/
 │   │   ├── search_tool.py       # ddgs API (FIXED)
-│   │   ├── image_gen_tool.py    # Pollinations.ai (REWRITTEN)
+│   │   ├── image_gen_tool.py    # Pollinations.ai + FLUX (REWRITTEN)
 │   │   ├── scrape_tool.py       # Web scraper
 │   │   └── python_exec_tool.py  # Python executor
 │   ├── memory/
 │   │   └── file_memory.py       # Persistent memory
-│   ├── config.py                # Central config + AYOUB_VERSION
-│   └── cli.py                   # 21-command CLI entry point
-├── .env                         # Provider + model config
-├── requirements.txt             # All dependencies (UPDATED)
-├── GEMINI_MODELS.md             # Model reference (NEW)
-├── ENHANCEMENTS.md              # Enhancement notes (NEW)
-├── CHANGELOG.md                 # v2.0.0 changelog (NEW)
-└── progress.md                  # This file
+│   ├── mcp_server/          # FastMCP SSE tool server
+│   └── voice/               # LiveKit JARVIS agent (scaffolded)
+├── templates/               # 10 prompt templates (NEW)
+│   ├── summarize.txt
+│   ├── code_review.txt
+│   ├── explain.txt
+│   ├── research.txt
+│   ├── translate.txt
+│   ├── write_email.txt
+│   ├── debug.txt
+│   ├── brainstorm.txt
+│   ├── plan.txt
+│   └── image_prompt.txt
+├── data/memory/             # Conversation memories
+├── logs/ayoub.log           # Rotating log
+├── output/imgs/             # Generated images
+├── .env                     # Provider + model config
+├── requirements.txt         # All dependencies
+├── README.md                # GitHub landing page (REWRITTEN)
+├── USER_GUIDE.md            # Detailed user guide (REWRITTEN)
+├── MANUAL.md                # Quick reference card (NEW)
+├── AYOUB_MANUAL.md          # Complete definitive manual (NEW)
+├── ENHANCEMENTS.md          # Versioned changelog (REWRITTEN)
+├── GEMINI_MODELS.md         # Model reference
+└── progress.md              # This file
 ```

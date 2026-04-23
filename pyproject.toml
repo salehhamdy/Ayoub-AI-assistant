@@ -48,9 +48,6 @@ dependencies = [
     # ── Image generation ──────────────────────────────────────────────────────
     "gradio_client",
     "matplotlib",
-
-    # ── Browser automation ────────────────────────────────────────────────────
-    "playwright",
 ]
 
 [project.scripts]
