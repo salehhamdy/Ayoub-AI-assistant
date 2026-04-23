@@ -172,7 +172,7 @@ async def entrypoint(ctx) -> None:
     else:
         print("[ayoub-voice] Using Groq+Cartesia voice stack (default)")
         stt = GroqSTT(api_key=GROQ_API_KEY, model="whisper-large-v3")
-        llm = GroqLLM(api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile")
+        llm = GroqLLM(api_key=GROQ_API_KEY, model="llama-3.1-8b-instant")
         tts = CartesiaTTS(
             api_key=CARTESIA_API_KEY,
             voice="79a125e8-cd45-4c13-8a67-188112f4dd22",
@@ -187,7 +187,7 @@ async def entrypoint(ctx) -> None:
 
         async def on_enter(self):
             await asyncio.sleep(1)
-            await self.say(
+            await session.say(
                 "Good to see you, sir. What shall we tackle today?",
                 allow_interruptions=True,
             )
