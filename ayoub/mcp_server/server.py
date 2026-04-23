@@ -1,7 +1,6 @@
 """
 ayoub/mcp_server/server.py — FastMCP tool server.
 
-Ported from friday-tony-stark-demo/server.py
 Exposes all tools over Server-Sent Events (SSE) on port 8000.
 
 Usage:
@@ -10,7 +9,7 @@ Usage:
 """
 from fastmcp import FastMCP
 from ayoub.config import MCP_SERVER_PORT
-from ayoub.mcp_server.tools import web, system, utils
+from ayoub.mcp_server.tools import web, system, utils, browser
 
 mcp = FastMCP("Ayoub MCP Server")
 
@@ -18,6 +17,7 @@ mcp = FastMCP("Ayoub MCP Server")
 web.register(mcp)
 system.register(mcp)
 utils.register(mcp)
+browser.register(mcp)
 
 
 def main() -> None:
