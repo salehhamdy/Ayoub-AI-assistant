@@ -171,7 +171,6 @@ Wrong: "The stock market performed positively with gains across major indices."
 2. Before calling any tool, say something natural like: "Give me a moment, sir." or "Let me check on that." Then call the tool silently.
 3. After the news brief, silently call open_world_monitor. The only thing you say is: "Let me open up the world monitor for you, sir."
 4. You are a voice. Speak like one. No lists, no markdown, no function names, no technical language of any kind.
-5. ABSOLUTE RULE: If you ever find yourself about to say anything that looks like code, a function call, angle brackets, curly braces, or any technical syntax — STOP. Do not say it. Ever. Not even partially. Speak only plain English.
 """
 
 
@@ -277,30 +276,100 @@ async def entrypoint(ctx) -> None:
 
     session = AgentSession(stt=stt, llm=llm, tts=tts, vad=vad)
 
-    from livekit.agents import mcp
-
-    # ── Native MCP server integration ─────────────────────────────────────────
-    # MCPServerHTTP auto-discovers all tools from the running MCP server and
-    # wires them as proper LLM function calls — no manual @function_tool needed.
-    mcp_server = mcp.MCPServerHTTP(
-        url=f"http://localhost:{MCP_SERVER_PORT}/sse",
-        transport_type="sse",
-        timeout=10,
-    )
+    from livekit.agents.voice import Agent
+    from livekit.agents import function_tool
 
     class _AyoubAgent(Agent):
         def __init__(self):
-            super().__init__(
-                instructions=_SYSTEM_PROMPT,
-                mcp_servers=[mcp_server],
-            )
+            super().__init__(instructions=_SYSTEM_PROMPT)
 
         async def on_enter(self):
             await asyncio.sleep(1)
-            await self.say(
+            await self.session.say(
                 "Good to see you, sir. What shall we tackle today?",
                 allow_interruptions=True,
             )
+
+        # ── Web / News tools ─────────────────────────────────────────────────
+
+        @function_tool()
+        async def get_world_news(self) -> str:
+            """Fetch top world news headlines and open the world monitor."""
+            return await _call_mcp_tool("get_world_news", {})
+
+        @function_tool()
+        async def open_world_monitor_tool(self) -> str:
+            """Open the live world map dashboard in the browser."""
+            return await _call_mcp_tool("open_world_monitor_tool", {})
+
+        @function_tool()
+        async def search_web(self, query: str) -> str:
+            """Search the internet for any topic and open the result pages."""
+            return await _call_mcp_tool("search_web", {"query": query})
+
+        @function_tool()
+        async def fetch_url(self, url: str) -> str:
+            """Fetch the text content of a specific URL."""
+            return await _call_mcp_tool("fetch_url", {"url": url})
+
+        # ── Browser interaction tools ─────────────────────────────────────────
+
+        @function_tool()
+        async def navigate_to(self, url: str) -> str:
+            """Open a website in the browser by navigating to its URL."""
+            return await _call_mcp_tool("navigate_to", {"url": url})
+
+        @function_tool()
+        async def click_on(self, target: str) -> str:
+            """Click a button or link on the current web page by its visible text."""
+            return await _call_mcp_tool("click_on", {"target": target})
+
+        @function_tool()
+        async def type_into(self, selector: str, text: str) -> str:
+            """Type text into an input field on the current web page."""
+            return await _call_mcp_tool("type_into", {"selector": selector, "text": text})
+
+        @function_tool()
+        async def press_enter(self) -> str:
+            """Press Enter on the current page, e.g. to submit a search."""
+            return await _call_mcp_tool("press_enter", {})
+
+        @function_tool()
+        async def read_current_page(self) -> str:
+            """Read and summarize the text content of the current browser page."""
+            return await _call_mcp_tool("read_current_page", {})
+
+        @function_tool()
+        async def scroll_page(self, direction: str = "down") -> str:
+            """Scroll the browser page up or down."""
+            return await _call_mcp_tool("scroll_page", {"direction": direction})
+
+        @function_tool()
+        async def go_back(self) -> str:
+            """Navigate back to the previous page in the browser."""
+            return await _call_mcp_tool("go_back", {})
+
+        @function_tool()
+        async def take_screenshot(self) -> str:
+            """Take a screenshot of the current browser page and show it on screen."""
+            return await _call_mcp_tool("take_screenshot", {})
+
+        @function_tool()
+        async def get_current_url(self) -> str:
+            """Return the URL currently open in the browser."""
+            return await _call_mcp_tool("get_current_url", {})
+
+        # ── System tools ─────────────────────────────────────────────────────
+
+        @function_tool()
+        async def get_current_time(self) -> str:
+            """Get the current date and time."""
+            return await _call_mcp_tool("get_current_time", {})
+
+        @function_tool()
+        async def get_system_info(self) -> str:
+            """Get system information like OS, CPU and memory usage."""
+            return await _call_mcp_tool("get_system_info", {})
 
     # agent is first positional arg; participant= not supported in livekit-agents 1.5.x
     await session.start(_AyoubAgent(), room=ctx.room)
