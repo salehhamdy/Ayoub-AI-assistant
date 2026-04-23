@@ -1,10 +1,11 @@
 """
 ayoub/tools/web_tools.py — Async web tools: news, fetch, world monitor.
+
+Ported from friday-tony-stark-demo/friday/tools/web.py
+Uses webbrowser.open() for cross-platform browser opening (no google-chrome).
 """
 import asyncio
 import re
-import subprocess
-import sys
 import webbrowser
 import xml.etree.ElementTree as ET
 
@@ -17,29 +18,7 @@ _RSS_FEEDS = [
     ("Al-Jazeera", "https://www.aljazeera.com/xml/rss/all.xml"),
 ]
 
-_WORLD_MONITOR_URL = "https://www.worldmonitor.app/"
-
 _HEADERS = {"User-Agent": "Ayoub-AI/1.0"}
-
-
-def _open_url(url: str) -> None:
-    """Open a URL in the default browser.
-
-    Uses 'cmd /c start' on Windows so it works even when called from a
-    background server process (where webbrowser.open can silently fail).
-    Falls back to webbrowser on other platforms.
-    """
-    try:
-        if sys.platform == "win32":
-            # 'start' needs an empty title arg so URLs with '&' are handled
-            subprocess.Popen(["cmd", "/c", "start", "", url],
-                             creationflags=subprocess.CREATE_NO_WINDOW)
-        elif sys.platform == "darwin":
-            subprocess.Popen(["open", url])
-        else:
-            subprocess.Popen(["xdg-open", url])
-    except Exception:
-        webbrowser.open(url)
 
 
 async def _fetch_feed(client: httpx.AsyncClient, source: str, url: str) -> list:
@@ -65,20 +44,12 @@ async def _fetch_feed(client: httpx.AsyncClient, source: str, url: str) -> list:
 
 
 async def get_world_news() -> str:
-    """Fetch top headlines from BBC, CNBC, NYT and Al-Jazeera in parallel.
-
-    Also opens worldmonitor.app in the browser so the user can visualise
-    what's happening in real time.
-    """
+    """Fetch top headlines from BBC, CNBC, NYT and Al-Jazeera in parallel."""
     async with httpx.AsyncClient(follow_redirects=True) as client:
         results = await asyncio.gather(
             *[_fetch_feed(client, src, url) for src, url in _RSS_FEEDS]
         )
     articles = [a for sub in results for a in sub]
-
-    # Open the live world monitor alongside the briefing
-    _open_url(_WORLD_MONITOR_URL)
-
     if not articles:
         return "Unable to reach news feeds right now, sir."
 
@@ -99,14 +70,7 @@ async def fetch_url(url: str) -> str:
         return r.text[:4000]
 
 
-def open_urls_in_browser(urls: list[str]) -> None:
-    """Open each URL in the system default browser (up to 5 tabs)."""
-    for url in urls[:5]:
-        if url and url.startswith("http"):
-            _open_url(url)
-
-
 def open_world_monitor() -> str:
     """Open worldmonitor.app in the system default browser (cross-platform)."""
-    _open_url(_WORLD_MONITOR_URL)
+    webbrowser.open("https://worldmonitor.app/")
     return "World Monitor opened in your browser, sir."
